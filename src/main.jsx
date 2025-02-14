@@ -2,6 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./router.jsx";
 import "./main.css";
+import { Amplify } from "aws-amplify";
+import amplifyconfig from "./amplifyconfiguration.json";
+Amplify.configure(amplifyconfig);
 // import { store } from "./store/store.js";
 // import { Provider } from "react-redux";
 

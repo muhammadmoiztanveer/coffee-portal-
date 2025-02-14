@@ -1,0 +1,23 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-coffeeportal-dev-13a02-authRole",
+      "UnauthRoleArn": "arn:aws:iam::812096089383:role/amplify-coffeeportal-dev-13a02-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::812096089383:role/amplify-coffeeportal-dev-13a02-authRole",
+      "Region": "eu-north-1",
+      "DeploymentBucketName": "amplify-coffeeportal-dev-13a02-deployment",
+      "UnauthRoleName": "amplify-coffeeportal-dev-13a02-unauthRole",
+      "StackName": "amplify-coffeeportal-dev-13a02",
+      "StackId": "arn:aws:cloudformation:eu-north-1:812096089383:stack/amplify-coffeeportal-dev-13a02/01972990-eac7-11ef-a41b-06ed40383891",
+      "AmplifyAppId": "d36jt6abynggii"
+    },
+    "categories": {
+      "auth": {
+        "coffeeportalc6b990bc": {}
+      },
+      "api": {
+        "coffeeportal": {}
+      }
+    }
+  }
+}

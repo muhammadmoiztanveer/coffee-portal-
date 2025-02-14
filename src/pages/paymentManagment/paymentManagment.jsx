@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Table, Input, Space, Button } from "antd";
+import { Table, Input, Space, Button, Tabs, theme } from "antd";
 import { SearchOutlined, DeleteFilled, EditFilled } from "@ant-design/icons";
 import qs from "qs";
-import DeleteModal from "../../components/modals/deleteModal/deleteModal";
-import EditUserModal from "../../components/modals/editUserModal/editUserModal";
+import AddDepositModal from "@/components/modals/addDepositModal/addDepositModal";
 
-const userManagmentPage = () => {
+const paymentManagmentPage = () => {
   const [data, setData] = useState();
   const [loading, setLoading] = useState(false);
   const [tableParams, setTableParams] = useState({
@@ -26,6 +25,9 @@ const userManagmentPage = () => {
 
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [userToEdit, setUserToEdit] = useState(null); // Store the user to edit
+
+  const [isDepositsTableVisible, setIsDepositsTableVisible] = useState(true);
+  const [isPurchasesTableVisible, setIsPurchasesTableVisible] = useState(false);
 
   const showEditModal = (user) => {
     setUserToEdit(user); // Set the user data for editing
@@ -89,6 +91,7 @@ const userManagmentPage = () => {
 
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
+
   const searchInput = useRef(null);
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -204,11 +207,12 @@ const userManagmentPage = () => {
       ),
   });
 
-  const columns = [
+  const depositsTableColumns = [
     {
       title: "Email",
       dataIndex: "email",
       sorter: true,
+      ...getColumnSearchProps("email"),
     },
     {
       title: "Customer Name",
@@ -218,30 +222,19 @@ const userManagmentPage = () => {
       ...getColumnSearchProps("name"),
     },
     {
-      title: "Phone Number",
-      dataIndex: "phone",
-      ...getColumnSearchProps("age"),
-    },
-    {
       title: "Deposit Balance",
       dataIndex: "balance",
     },
     {
-      title: "Coins",
-      dataIndex: "coin",
-    },
-    {
-      title: "Stamps",
-      dataIndex: "phone",
+      title: "Payment Type",
+      dataIndex: "payment-type",
     },
     {
       title: "Actions",
-      dataIndex: "phone",
       render: (_, record) => (
-        <div className="flex space-x-2">
+        <div className="flex justify-center space-x-2">
           {/* Edit Icon */}
-          <button
-            className="text-xl cursor-pointer"
+          <Button
             onClick={() =>
               showEditModal({
                 id: 12,
@@ -254,16 +247,51 @@ const userManagmentPage = () => {
               })
             }
           >
-            <EditFilled />
-          </button>
+            Add Deposit
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
-          {/* Delete Icon */}
-          <button
-            className="text-xl text-red-600 hover:text-red-700 focus:outline-none cursor-pointer"
-            onClick={() => handleDelete(record)}
+  const paymentsTableColumns = [
+    {
+      title: "Email",
+      dataIndex: "email",
+      sorter: true,
+      ...getColumnSearchProps("email"),
+    },
+    {
+      title: "Customer Name",
+      dataIndex: "name",
+      sorter: true,
+      render: (name) => `${name.first} ${name.last}`,
+      ...getColumnSearchProps("name"),
+    },
+    {
+      title: "Current Balance",
+      dataIndex: "balance",
+    },
+    {
+      title: "Actions",
+      render: (_, record) => (
+        <div className="flex justify-center space-x-2">
+          {/* Edit Icon */}
+          <Button
+            onClick={() =>
+              showEditModal({
+                id: 12,
+                name: `User 12`,
+                email: `user12@example.com`,
+                phoneNumber: "84239084093284908",
+                depositBalance: Math.floor(Math.random() * 1000),
+                coins: Math.floor(Math.random() * 500),
+                stamps: Math.floor(Math.random() * 200),
+              })
+            }
           >
-            <DeleteFilled />
-          </button>
+            Add Payment
+          </Button>
         </div>
       ),
     },
@@ -320,26 +348,66 @@ const userManagmentPage = () => {
     }
   };
 
+  function showDepositsTable() {
+    setIsPurchasesTableVisible(false);
+    setIsDepositsTableVisible(true);
+  }
+
+  function showPurchasesTable() {
+    setIsDepositsTableVisible(false);
+    setIsPurchasesTableVisible(true);
+  }
+
   return (
-    <div className="flex flex-col gap-8 mt-8">
-      <div className="text-2xl font-medium">Users Managment</div>
+    <div className="flex flex-col gap-10 mt-8">
+      <div className="text-2xl font-medium">Payment Managment</div>
 
-      <Table
-        columns={columns}
-        rowKey={(record) => record.login.uuid}
-        dataSource={data}
-        pagination={tableParams.pagination}
-        loading={loading}
-        onChange={handleTableChange}
-      />
+      <div className="flex gap-6 font-medium">
+        <button
+          className={
+            isDepositsTableVisible
+              ? "w-full py-4 bg-primary text-white rounded-xl"
+              : "w-full py-4 bg-white hover:bg-primary/80 text-primary hover:text-white rounded-xl"
+          }
+          onClick={showDepositsTable}
+        >
+          Manage Deposits
+        </button>
+        <button
+          className={
+            isPurchasesTableVisible
+              ? "w-full py-4 bg-primary text-white rounded-xl"
+              : "w-full py-4 bg-white hover:bg-primary/80 text-primary hover:text-white rounded-xl"
+          }
+          onClick={showPurchasesTable}
+        >
+          Manage Purchases
+        </button>
+      </div>
 
-      <DeleteModal
-        isVisible={isModalVisible}
-        onCancel={handleCancel}
-        onConfirm={handleOk}
-      />
+      {isDepositsTableVisible && (
+        <Table
+          columns={depositsTableColumns}
+          rowKey={(record) => record.login.uuid}
+          dataSource={data}
+          pagination={tableParams.pagination}
+          loading={loading}
+          onChange={handleTableChange}
+        />
+      )}
 
-      <EditUserModal
+      {isPurchasesTableVisible && (
+        <Table
+          columns={paymentsTableColumns}
+          rowKey={(record) => record.login.uuid}
+          dataSource={data}
+          pagination={tableParams.pagination}
+          loading={loading}
+          onChange={handleTableChange}
+        />
+      )}
+
+      <AddDepositModal
         isVisible={isEditModalVisible}
         onCancel={handleCancelEdit}
         initialValues={userToEdit}
@@ -350,4 +418,4 @@ const userManagmentPage = () => {
   );
 };
 
-export default userManagmentPage;
+export default paymentManagmentPage;

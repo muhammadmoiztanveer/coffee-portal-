@@ -1,1 +1,89 @@
 @import "tailwindcss";
+
+.bg-primary {
+  background-color: black !important;
+}
+
+.text-primary {
+  color: black !important;
+}
+
+.border-primary {
+  border-color: black !important;
+}
+
+.ant-spin-dot-spin i {
+  color: black !important;
+}
+
+.ant-table {
+  border: 1px solid black !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+}
+
+.ant-table-thead .ant-table-cell {
+  color: white !important;
+  background: black !important;
+}
+
+.ant-table-thead .ant-table-column-sorter-inner svg {
+  fill: white !important;
+  stroke: white !important;
+}
+
+.anticon-search svg {
+  fill: white !important;
+  stroke: white !important;
+}
+
+.ant-select-outlined,
+.ant-pagination-item-active a {
+  color: black !important;
+}
+
+.ant-pagination-item-active {
+  border-color: black !important;
+}
+
+.ant-select-selection-item {
+  color: black !important;
+}
+
+.ant-select-selection-item-active, /* Active selected item */
+  .ant-select-selection-item:active {
+  /* Active selected item (alternative) */
+  background-color: black !important; /* Selected option background color */
+  color: white !important; /* Selected option text color */
+}
+
+/* Hover effect on dropdown options */
+.ant-select-dropdown .ant-select-item-option:hover {
+  background-color: rgba(
+    96,
+    9,
+    18,
+    0.2
+  ) !important; /* Hover background color (low opacity) */
+  color: black !important; /* Hover text color */
+}
+
+/* Style for selected option in the dropdown (permanent highlight) */
+.ant-select-dropdown .ant-select-item-option-active {
+  background-color: black !important; /* Selected option background color */
+  color: white !important; /* Selected option text color */
+}
+
+.ant-select-dropdown .ant-select-item-option {
+  color: black !important; /* Default dropdown option text color */
+}
+
+.ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+  border-color: black !important; /* Hover border color */
+}
+
+.ant-select-focused .ant-select-selector,
+.ant-select-open .ant-select-selector {
+  border-color: black !important; /* Focused/Open border color */
+  box-shadow: 0 !important; /* Focused/Open box shadow */
+}
