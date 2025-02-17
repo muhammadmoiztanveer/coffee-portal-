@@ -59,5 +59,30 @@
       "providerPlugin": "awscloudformation",
       "service": "Cognito"
     }
+  },
+  "function": {
+    "saveRegisteredUser": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_saveRegisteredUser_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "saveRegisteredUser"
+        }
+      ]
+    },
+    "AMPLIFY_function_saveRegisteredUser_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "saveRegisteredUser"
+        }
+      ]
+    }
   }
 }

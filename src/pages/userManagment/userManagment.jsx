@@ -4,9 +4,13 @@ import { SearchOutlined, DeleteFilled, EditFilled } from "@ant-design/icons";
 import qs from "qs";
 import DeleteModal from "../../components/modals/deleteModal/deleteModal";
 import EditUserModal from "../../components/modals/editUserModal/editUserModal";
+import { listUsers } from "../../graphql/queries";
+import { generateClient } from "aws-amplify/api";
+import { getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
 
 const userManagmentPage = () => {
-  const [data, setData] = useState();
+  const client = generateClient();
+
   const [loading, setLoading] = useState(false);
   const [tableParams, setTableParams] = useState({
     pagination: {
@@ -14,10 +18,7 @@ const userManagmentPage = () => {
       pageSize: 10,
     },
   });
-
-  useEffect(() => {
-    console.log("dataaa", data);
-  }, data);
+  const [nextTokens, setNextTokens] = useState({});
 
   // Delete Modal
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -26,6 +27,52 @@ const userManagmentPage = () => {
 
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [userToEdit, setUserToEdit] = useState(null); // Store the user to edit
+
+  const [users, setUsers] = useState([]);
+
+  const listUsersData = async () => {
+    try {
+      setLoading(true);
+      const { current, pageSize } = tableParams.pagination;
+      const nextToken = current === 1 ? null : nextTokens[current - 1];
+
+      const response = await client.graphql({
+        query: listUsers,
+        variables: {
+          limit: pageSize,
+          nextToken: nextToken,
+        },
+      });
+
+      const { items, nextToken: newNextToken } = response.data.listUsers;
+      setUsers(items);
+      setHasMore(!!newNextToken);
+
+      // Store nextToken for the next page
+      if (newNextToken) {
+        setNextTokens((prev) => ({
+          ...prev,
+          [current]: newNextToken,
+        }));
+      }
+
+      setTableParams((prev) => ({
+        ...prev,
+        pagination: {
+          ...prev.pagination,
+          total: items.length ? prev.pagination.total || 1000 : 0, // Approximate total
+        },
+      }));
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    listUsersData();
+  }, []);
 
   const showEditModal = (user) => {
     setUserToEdit(user); // Set the user data for editing
@@ -219,7 +266,7 @@ const userManagmentPage = () => {
     },
     {
       title: "Phone Number",
-      dataIndex: "phone",
+      dataIndex: "phoneNumber",
       ...getColumnSearchProps("age"),
     },
     {
@@ -228,15 +275,18 @@ const userManagmentPage = () => {
     },
     {
       title: "Coins",
-      dataIndex: "coin",
+      dataIndex: "coins",
     },
     {
       title: "Stamps",
-      dataIndex: "phone",
+      dataIndex: "stamps",
+    },
+    {
+      title: "Free Drinks",
+      dataIndex: "freeDrinks",
     },
     {
       title: "Actions",
-      dataIndex: "phone",
       render: (_, record) => (
         <div className="flex space-x-2">
           {/* Edit Icon */}
@@ -269,54 +319,31 @@ const userManagmentPage = () => {
     },
   ];
 
-  const getRandomuserParams = (params) => ({
-    results: params.pagination?.pageSize,
-    page: params.pagination?.current,
-    ...params,
-  });
-
-  const fetchData = () => {
-    setLoading(true);
-    fetch(
-      `https://randomuser.me/api?${qs.stringify(
-        getRandomuserParams(tableParams)
-      )}`
-    )
-      .then((res) => res.json())
-      .then(({ results }) => {
-        setData(results);
-        setLoading(false);
-        setTableParams({
-          ...tableParams,
-          pagination: {
-            ...tableParams.pagination,
-            total: 200,
-            // 200 is mock data, you should read it from server
-            // total: data.totalCount,
-          },
-        });
-      });
-  };
-
-  useEffect(fetchData, [
-    tableParams.pagination?.current,
-    tableParams.pagination?.pageSize,
-    tableParams?.sortOrder,
-    tableParams?.sortField,
-    JSON.stringify(tableParams.filters),
-  ]);
+  useEffect(() => {
+    listUsersData();
+  }, [tableParams.pagination.current, tableParams.pagination.pageSize]);
 
   const handleTableChange = (pagination, filters, sorter) => {
-    setTableParams({
-      pagination,
-      filters,
-      sortOrder: Array.isArray(sorter) ? undefined : sorter.order,
-      sortField: Array.isArray(sorter) ? undefined : sorter.field,
-    });
-
-    // `dataSource` is useless since `pageSize` changed
-    if (pagination.pageSize !== tableParams.pagination?.pageSize) {
-      setData([]);
+    if (pagination.pageSize !== tableParams.pagination.pageSize) {
+      // Reset pagination when page size changes
+      setNextTokens({});
+      setHasMore(true);
+      setTableParams({
+        pagination: {
+          ...pagination,
+          current: 1,
+        },
+        filters,
+        sortOrder: sorter.order,
+        sortField: sorter.field,
+      });
+    } else {
+      setTableParams({
+        pagination,
+        filters,
+        sortOrder: sorter.order,
+        sortField: sorter.field,
+      });
     }
   };
 
@@ -326,8 +353,8 @@ const userManagmentPage = () => {
 
       <Table
         columns={columns}
-        rowKey={(record) => record.login.uuid}
-        dataSource={data}
+        rowKey={(record) => record.id}
+        dataSource={users}
         pagination={tableParams.pagination}
         loading={loading}
         onChange={handleTableChange}

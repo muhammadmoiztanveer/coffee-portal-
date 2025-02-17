@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   UserOutlined,
   CreditCardOutlined,
@@ -6,21 +6,44 @@ import {
   DollarOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useNavigate } from "react-router-dom";
 import Coffee from "@/assets/ice-coffee.png";
 import User from "@/assets/user.png";
-import "@/main.css"
+import { getCurrentUser } from "aws-amplify/auth";
+import { useNavigation } from "react-router-dom";
+import "@/main.css";
 
 const Layout = () => {
+  const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
+
+  async function currentAuthenticatedUser() {
+    try {
+      const { username, userId, signInDetails } = await getCurrentUser();
+      // console.log(`The username: ${username}`);
+      // console.log(`The userId: ${userId}`);
+      // console.log(`The signInDetails: ${signInDetails}`);
+
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fecthing currentAuthenticatedUser in layout", err);
+      navigate("/signin");
+    }
+  }
+
+  useEffect(() => {
+    currentAuthenticatedUser();
+    navigate("/users");
+  }, []);
+
   return (
     // bg-gradient-to-r from-black to-[#5e0b16]
     <>
       <div className="w-full px-4 py-4 bg-white border-0 border-b border-slate-200 text-black flex justify-between items-center">
         <div className="flex justify-center gap-3 items-center">
           <img src={Coffee} alt="Coffee" className="size-10" />
-          <span className="font-bold text-2xl text-black">
-            Caffeine Patch
-          </span>
+          <span className="font-bold text-2xl text-black">Caffeine Patch</span>
         </div>
 
         <div className="flex gap-3">

@@ -1,6 +1,57 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const onCreateUser = /* GraphQL */ `
+  subscription OnCreateUser($filter: ModelSubscriptionUserFilterInput) {
+    onCreateUser(filter: $filter) {
+      id
+      email
+      name
+      phoneNumber
+      balance
+      freeDrinks
+      coins
+      stamps
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onUpdateUser = /* GraphQL */ `
+  subscription OnUpdateUser($filter: ModelSubscriptionUserFilterInput) {
+    onUpdateUser(filter: $filter) {
+      id
+      email
+      name
+      phoneNumber
+      balance
+      freeDrinks
+      coins
+      stamps
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onDeleteUser = /* GraphQL */ `
+  subscription OnDeleteUser($filter: ModelSubscriptionUserFilterInput) {
+    onDeleteUser(filter: $filter) {
+      id
+      email
+      name
+      phoneNumber
+      balance
+      freeDrinks
+      coins
+      stamps
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
 export const onCreateDeposit = /* GraphQL */ `
   subscription OnCreateDeposit($filter: ModelSubscriptionDepositFilterInput) {
     onCreateDeposit(filter: $filter) {
@@ -70,57 +121,6 @@ export const onDeletePayment = /* GraphQL */ `
       userID
       stamps
       amount
-      createdAt
-      updatedAt
-      __typename
-    }
-  }
-`;
-export const onCreateUser = /* GraphQL */ `
-  subscription OnCreateUser($filter: ModelSubscriptionUserFilterInput) {
-    onCreateUser(filter: $filter) {
-      id
-      email
-      name
-      phoneNumber
-      type
-      balance
-      coins
-      stamps
-      createdAt
-      updatedAt
-      __typename
-    }
-  }
-`;
-export const onUpdateUser = /* GraphQL */ `
-  subscription OnUpdateUser($filter: ModelSubscriptionUserFilterInput) {
-    onUpdateUser(filter: $filter) {
-      id
-      email
-      name
-      phoneNumber
-      type
-      balance
-      coins
-      stamps
-      createdAt
-      updatedAt
-      __typename
-    }
-  }
-`;
-export const onDeleteUser = /* GraphQL */ `
-  subscription OnDeleteUser($filter: ModelSubscriptionUserFilterInput) {
-    onDeleteUser(filter: $filter) {
-      id
-      email
-      name
-      phoneNumber
-      type
-      balance
-      coins
-      stamps
       createdAt
       updatedAt
       __typename

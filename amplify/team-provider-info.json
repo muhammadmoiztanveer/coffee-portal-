@@ -17,6 +17,12 @@
       },
       "api": {
         "coffeeportal": {}
+      },
+      "function": {
+        "saveRegisteredUser": {
+          "deploymentBucketName": "amplify-coffeeportal-dev-13a02-deployment",
+          "s3Key": "amplify-builds/saveRegisteredUser-31375a4a66716f4f4768-build.zip"
+        }
       }
     }
   }

@@ -1,6 +1,66 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const createUser = /* GraphQL */ `
+  mutation CreateUser(
+    $input: CreateUserInput!
+    $condition: ModelUserConditionInput
+  ) {
+    createUser(input: $input, condition: $condition) {
+      id
+      email
+      name
+      phoneNumber
+      balance
+      freeDrinks
+      coins
+      stamps
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const updateUser = /* GraphQL */ `
+  mutation UpdateUser(
+    $input: UpdateUserInput!
+    $condition: ModelUserConditionInput
+  ) {
+    updateUser(input: $input, condition: $condition) {
+      id
+      email
+      name
+      phoneNumber
+      balance
+      freeDrinks
+      coins
+      stamps
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const deleteUser = /* GraphQL */ `
+  mutation DeleteUser(
+    $input: DeleteUserInput!
+    $condition: ModelUserConditionInput
+  ) {
+    deleteUser(input: $input, condition: $condition) {
+      id
+      email
+      name
+      phoneNumber
+      balance
+      freeDrinks
+      coins
+      stamps
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
 export const createDeposit = /* GraphQL */ `
   mutation CreateDeposit(
     $input: CreateDepositInput!
@@ -88,66 +148,6 @@ export const deletePayment = /* GraphQL */ `
       userID
       stamps
       amount
-      createdAt
-      updatedAt
-      __typename
-    }
-  }
-`;
-export const createUser = /* GraphQL */ `
-  mutation CreateUser(
-    $input: CreateUserInput!
-    $condition: ModelUserConditionInput
-  ) {
-    createUser(input: $input, condition: $condition) {
-      id
-      email
-      name
-      phoneNumber
-      type
-      balance
-      coins
-      stamps
-      createdAt
-      updatedAt
-      __typename
-    }
-  }
-`;
-export const updateUser = /* GraphQL */ `
-  mutation UpdateUser(
-    $input: UpdateUserInput!
-    $condition: ModelUserConditionInput
-  ) {
-    updateUser(input: $input, condition: $condition) {
-      id
-      email
-      name
-      phoneNumber
-      type
-      balance
-      coins
-      stamps
-      createdAt
-      updatedAt
-      __typename
-    }
-  }
-`;
-export const deleteUser = /* GraphQL */ `
-  mutation DeleteUser(
-    $input: DeleteUserInput!
-    $condition: ModelUserConditionInput
-  ) {
-    deleteUser(input: $input, condition: $condition) {
-      id
-      email
-      name
-      phoneNumber
-      type
-      balance
-      coins
-      stamps
       createdAt
       updatedAt
       __typename

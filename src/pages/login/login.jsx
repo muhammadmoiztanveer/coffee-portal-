@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import { Input, Button } from "antd";
 import { useNavigate } from "react-router-dom";
-import {signIn} from 'aws-amplify/auth';
+import { signIn } from "aws-amplify/auth";
 
 // Validation schema using Yup
 const LoginSchema = Yup.object().shape({
@@ -18,6 +18,23 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate(); // Hook to redirect on success
+
+  const [loading, setLoading] = useState(true);
+
+  // Function to check if the user is already authenticated
+  const checkAuthentication = async () => {
+    try {
+      await getCurrentUser();
+      navigate("/users");
+    } catch (err) {
+      console.log(err);
+      setLoading(false); // Allow sign-in form to render if not authenticated
+    }
+  };
+
+  useEffect(() => {
+    checkAuthentication();
+  }, []);
 
   // Toggle password visibility
   const togglePasswordVisibility = () => setShowPassword(!showPassword);

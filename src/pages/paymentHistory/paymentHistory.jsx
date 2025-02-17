@@ -248,7 +248,7 @@ const paymentHistoryPage = () => {
               })
             }
           >
-            Add Deposit
+            Show Deposit History
           </button>
         </div>
       ),
@@ -292,7 +292,7 @@ const paymentHistoryPage = () => {
               })
             }
           >
-            Make Payment
+            Show Payment History
           </button>
         </div>
       ),

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
@@ -6,6 +6,7 @@ import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import { Input, Button } from "antd";
 import { Link } from "react-router-dom";
 import { signUp } from "aws-amplify/auth";
+import { getCurrentUser } from "aws-amplify/auth";
 
 // Validation schema using Yup
 const SignupSchema = Yup.object().shape({
@@ -24,6 +25,22 @@ const SignUpPage = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuthSession = async () => {
+      try {
+        await getCurrentUser();
+        navigate("/users");
+      } catch (err) {
+        console.log(err);
+        setLoading(false);
+      }
+    };
+
+    checkAuthSession();
+  }, [navigate]);
 
   // Toggle password visibility
   const togglePasswordVisibility = () => setShowPassword(!showPassword);

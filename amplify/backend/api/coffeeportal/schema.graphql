@@ -3,13 +3,13 @@
 input AMPLIFY {
   globalAuthRule: AuthRule = { allow: public }
 } # FOR TESTING ONLY!
-type User @model @auth(rules: [{ allow: groups, groups: ["Admin"] }]) {
+type User @model {
   id: ID!
   email: String!
   name: String!
   phoneNumber: String!
-  type: String!
-  balance: Float!
+  balance: Float
+  freeDrinks: Int
   coins: Int
   stamps: Int
   createdAt: AWSDateTime
