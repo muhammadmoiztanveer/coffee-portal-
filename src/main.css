@@ -87,3 +87,15 @@
   border-color: black !important; /* Focused/Open border color */
   box-shadow: 0 !important; /* Focused/Open box shadow */
 }
+
+/* Modal Title */
+.ant-modal-header {
+  @apply !mb-6;
+}
+.ant-modal-title {
+  @apply !text-2xl;
+}
+.ant-form-item-label {
+  @apply !font-medium;
+}
+/* Modal Title */

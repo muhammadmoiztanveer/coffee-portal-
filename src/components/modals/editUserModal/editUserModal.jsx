@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Modal, Button, Form, Input } from "antd";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -20,18 +20,16 @@ const EditUserModal = ({
       .min(10, "Phone number must be at least 10 digits")
       .max(15, "Phone number cannot exceed 15 digits")
       .required("Phone Number is required"),
-    depositBalance: Yup.number()
+    balance: Yup.number()
       .typeError("Deposit Balance must be a number")
-      .required("Deposit Balance is required")
-      .positive("Deposit Balance must be positive or zero"),
+      .required("Deposit Balance is required"),
     coins: Yup.number()
       .typeError("Coins must be a number")
-      .required("Coins are required")
-      .positive("Coins must be positive or zero"),
+      .required("Coins are required"),
     stamps: Yup.number()
       .typeError("Stamps must be a number")
-      .required("Stamps are required")
-      .positive("Stamps must be positive or zero"),
+      .required("Stamps are required"),
+    freeDrinks: Yup.number().typeError("Free Drinks must be a number"),
   });
 
   const formik = useFormik({
@@ -39,29 +37,34 @@ const EditUserModal = ({
       email: "",
       name: "",
       phoneNumber: "",
-      depositBalance: 0,
+      freeDrinks: 0,
+      balance: 0,
       coins: 0,
       stamps: 0,
     },
     validationSchema: validationSchema,
-    onSubmit: async (values) => {
-      onSubmit(values);
-      formik.setSubmitting(true);
+    onSubmit: async (values, { setSubmitting }) => {
       try {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await onSubmit(values, setSubmitting);
         onCancel();
         formik.resetForm();
       } catch (error) {
         console.error("Error submitting form:", error);
       } finally {
-        formik.setSubmitting(false);
+        setSubmitting(false);
       }
     },
   });
 
+  useEffect(() => {
+    if (initialValues) {
+      formik.setValues(initialValues);
+    }
+  }, [initialValues]);
+
   return (
     <Modal
-      title="Edit User"
+      title="Edit Record"
       centered
       open={isVisible}
       onCancel={onCancel}
@@ -81,9 +84,9 @@ const EditUserModal = ({
           </Button>
         </div>,
       ]}
-      width={500}
+      width={700}
     >
-      <Form layout="vertical">
+      <Form layout="vertical" className="grid grid-cols-2 gap-x-4">
         <Form.Item
           label="Email"
           validateStatus={
@@ -94,10 +97,12 @@ const EditUserModal = ({
               ? formik.errors.email
               : ""
           }
+          className="col-span-1 "
         >
           <Input
             placeholder="Email"
             name="email"
+            type="email"
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             value={formik.values.email}
@@ -112,10 +117,12 @@ const EditUserModal = ({
           help={
             formik.touched.name && formik.errors.name ? formik.errors.name : ""
           }
+          className="col-span-1"
         >
           <Input
             placeholder="Customer Name"
             name="name"
+            type="text"
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             value={formik.values.name}
@@ -134,6 +141,7 @@ const EditUserModal = ({
               ? formik.errors.phoneNumber
               : ""
           }
+          className="col-span-1 "
         >
           <Input
             type="tel"
@@ -148,23 +156,22 @@ const EditUserModal = ({
         <Form.Item
           label="Deposit Balance"
           validateStatus={
-            formik.touched.depositBalance && formik.errors.depositBalance
-              ? "error"
-              : ""
+            formik.touched.balance && formik.errors.balance ? "error" : ""
           }
           help={
-            formik.touched.depositBalance && formik.errors.depositBalance
-              ? formik.errors.depositBalance
+            formik.touched.balance && formik.errors.balance
+              ? formik.errors.balance
               : ""
           }
+          className="col-span-1"
         >
           <Input
             type="number"
             placeholder="Deposit Balance"
-            name="depositBalance"
+            name="balance"
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            value={formik.values.depositBalance}
+            value={formik.values.balance}
           />
         </Form.Item>
 
@@ -178,6 +185,7 @@ const EditUserModal = ({
               ? formik.errors.coins
               : ""
           }
+          className="col-span-1"
         >
           <Input
             type="number"
@@ -199,6 +207,7 @@ const EditUserModal = ({
               ? formik.errors.stamps
               : ""
           }
+          className="col-span-1"
         >
           <Input
             type="number"
@@ -207,6 +216,27 @@ const EditUserModal = ({
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             value={formik.values.stamps}
+          />
+        </Form.Item>
+
+        <Form.Item
+          label="Free Drinks"
+          validateStatus={
+            formik.touched.freeDrinks && formik.errors.freeDrinks ? "error" : ""
+          }
+          help={
+            formik.touched.freeDrinks && formik.errors.freeDrinks
+              ? formik.errors.freeDrinks
+              : ""
+          }
+        >
+          <Input
+            type="number"
+            placeholder="Free Drinks"
+            name="freeDrinks"
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values.freeDrinks}
           />
         </Form.Item>
       </Form>
