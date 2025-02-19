@@ -11,6 +11,7 @@ export const createUser = /* GraphQL */ `
       email
       name
       phoneNumber
+      paymentType
       balance
       freeDrinks
       coins
@@ -31,6 +32,7 @@ export const updateUser = /* GraphQL */ `
       email
       name
       phoneNumber
+      paymentType
       balance
       freeDrinks
       coins
@@ -51,6 +53,7 @@ export const deleteUser = /* GraphQL */ `
       email
       name
       phoneNumber
+      paymentType
       balance
       freeDrinks
       coins

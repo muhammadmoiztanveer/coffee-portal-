@@ -8,6 +8,7 @@ export const getUser = /* GraphQL */ `
       email
       name
       phoneNumber
+      paymentType
       balance
       freeDrinks
       coins
@@ -30,6 +31,7 @@ export const listUsers = /* GraphQL */ `
         email
         name
         phoneNumber
+        paymentType
         balance
         freeDrinks
         coins

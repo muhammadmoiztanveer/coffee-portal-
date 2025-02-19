@@ -13,6 +13,7 @@ export const handler = async (event) => {
     const freeDrinks = 0;
     const coins = 0;
     const stamps = 0;
+    const paymentType = "";
 
     // console.log(
     //   "id",
@@ -30,11 +31,12 @@ export const handler = async (event) => {
     // );
 
     const params = {
-      TableName: "User-myhewsrzgrahpaanovnsdae3ua-dev",
+      TableName: "User-ao43gdqvu5eq5phtwjwwgio3se-coffeepor",
       Item: {
         id: userId,
         email: email,
         name: name,
+        paymentType: paymentType,
         phoneNumber: phoneNumber,
         balance: balance,
         freeDrinks: freeDrinks,

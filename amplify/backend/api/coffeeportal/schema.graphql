@@ -8,6 +8,7 @@ type User @model {
   email: String!
   name: String!
   phoneNumber: String!
+  paymentType: String!
   balance: Float
   freeDrinks: Int
   coins: Int

@@ -25,5 +25,32 @@
         }
       }
     }
+  },
+  "coffeepor": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-coffeeportal-coffeepor-20934-authRole",
+      "UnauthRoleArn": "arn:aws:iam::812096089383:role/amplify-coffeeportal-coffeepor-20934-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::812096089383:role/amplify-coffeeportal-coffeepor-20934-authRole",
+      "Region": "eu-north-1",
+      "DeploymentBucketName": "amplify-coffeeportal-coffeepor-20934-deployment",
+      "UnauthRoleName": "amplify-coffeeportal-coffeepor-20934-unauthRole",
+      "StackName": "amplify-coffeeportal-coffeepor-20934",
+      "StackId": "arn:aws:cloudformation:eu-north-1:812096089383:stack/amplify-coffeeportal-coffeepor-20934/91b70dd0-eebc-11ef-912d-069c366a35f7",
+      "AmplifyAppId": "d36jt6abynggii"
+    },
+    "categories": {
+      "auth": {
+        "coffeeportalc6b990bc": {}
+      },
+      "function": {
+        "saveRegisteredUser": {
+          "deploymentBucketName": "amplify-coffeeportal-coffeepor-20934-deployment",
+          "s3Key": "amplify-builds/saveRegisteredUser-2b52795a4941744b4a6e-build.zip"
+        }
+      },
+      "api": {
+        "coffeeportal": {}
+      }
+    }
   }
 }

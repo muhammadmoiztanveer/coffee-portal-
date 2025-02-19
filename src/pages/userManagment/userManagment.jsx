@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Table, Input, Space, Button, message } from "antd";
+import { Table, Input, Space, Button, message, Spin } from "antd";
 import Highlighter from "react-highlight-words";
 import { SearchOutlined, DeleteFilled, EditFilled } from "@ant-design/icons";
 import DeleteModal from "@/components/modals/deleteModal/deleteModal";
@@ -11,24 +11,171 @@ import { updateUser, deleteUser } from "@/graphql/mutations";
 const userManagmentPage = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [loading, setLoading] = useState(false);
+  const [isContentLoading, setIsContentLoading] = useState(false);
   const [tableParams, setTableParams] = useState({
     pagination: {
       current: 1,
       pageSize: 10,
     },
   });
-  const [nextTokens, setNextTokens] = useState({});
+  const [nextTokens, setNextTokens] = useState([]);
   const [hasMore, setHasMore] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [userToEdit, setUserToEdit] = useState(null);
   const [users, setUsers] = useState([]);
-  const [searchText, setSearchText] = useState("");
-  const [searchedColumn, setSearchedColumn] = useState("");
+  const [searchFilter, setSearchFilter] = useState([]);
   const searchInput = useRef(null);
 
+  const isFetching = useRef(false);
+
   const client = generateClient();
+
+  const fetchTotalCount = async () => {
+    if (isFetching.current) return;
+    isFetching.current = true;
+    setLoading(true);
+    setIsContentLoading(true);
+
+    let totalUsers = 0;
+    let paginationToken = null;
+
+    try {
+      let allUsers = [];
+      do {
+        const response = await client.graphql({
+          query: listUsers,
+          variables: {
+            limit: tableParams.pagination.pageSize,
+            nextToken: paginationToken,
+          },
+        });
+
+        if (!response.data || !response.data.listUsers) {
+          console.error("Invalid response format:", response);
+          messageApi.open({
+            type: "error",
+            content: "Error fetching users. Invalid response from the server.",
+          });
+          break;
+        }
+
+        const fetchedUsers = response.data.listUsers.items;
+        allUsers.push(...fetchedUsers);
+        paginationToken = response.data.listUsers.nextToken;
+
+        if (paginationToken) {
+          setNextTokens((prev) => [...prev, paginationToken]);
+        }
+
+        // console.log(
+        //   "Fetched Users Length",
+        //   fetchedUsers.length,
+        //   "Next Token:",
+        //   paginationToken
+        // );
+
+        totalUsers += fetchedUsers.length;
+      } while (paginationToken);
+
+      setTableParams((prev) => ({
+        ...prev,
+        pagination: {
+          ...prev.pagination,
+          total: totalUsers,
+        },
+      }));
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      messageApi.open({
+        type: "error",
+        content: "Error fetching users. Please try again later.",
+      });
+    } finally {
+      isFetching.current = false;
+      setLoading(false);
+      setIsContentLoading(false);
+    }
+  };
+
+  const fetchSearchedTotalCount = async () => {
+    if (isFetching.current) return;
+    isFetching.current = true;
+    setNextTokens([]);
+    setLoading(true);
+
+    let totalUsers = 0;
+    let paginationToken = null;
+
+    try {
+      let allUsers = [];
+      do {
+        const filter =
+          searchFilter.length > 0
+            ? {
+                and: searchFilter.map((filterObj) => ({
+                  [filterObj.columnName]: { eq: filterObj.search },
+                })),
+              }
+            : undefined;
+
+        console.log("filterssss from tota count fucntion", filter);
+
+        const response = await client.graphql({
+          query: listUsers,
+          variables: {
+            limit: tableParams.pagination.pageSize,
+            nextToken: paginationToken,
+            filter: filter,
+          },
+        });
+
+        if (!response.data || !response.data.listUsers) {
+          console.error("Invalid response format:", response);
+          messageApi.open({
+            type: "error",
+            content: "Error fetching users. Invalid response from the server.",
+          });
+          break;
+        }
+
+        const fetchedUsers = response.data.listUsers.items;
+        allUsers.push(...fetchedUsers);
+        paginationToken = response.data.listUsers.nextToken;
+
+        if (paginationToken) {
+          setNextTokens((prev) => [...prev, paginationToken]);
+        }
+
+        // console.log(
+        //   "Fetched Users Length",
+        //   fetchedUsers.length,
+        //   "Next Token:",
+        //   paginationToken
+        // );
+
+        totalUsers += fetchedUsers.length;
+      } while (paginationToken);
+
+      setTableParams((prev) => ({
+        ...prev,
+        pagination: {
+          ...prev.pagination,
+          total: totalUsers,
+        },
+      }));
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      messageApi.open({
+        type: "error",
+        content: "Error fetching users. Please try again later.",
+      });
+    } finally {
+      isFetching.current = false;
+      setLoading(false);
+    }
+  };
 
   const listUsersData = async () => {
     try {
@@ -36,66 +183,71 @@ const userManagmentPage = () => {
       const { current, pageSize } = tableParams.pagination;
       const nextToken = current === 1 ? null : nextTokens[current - 1];
 
+      // Construct the filter object from the searchFilter state
+      const filter =
+        searchFilter.length > 0
+          ? {
+              and: searchFilter.map((filterObj) => ({
+                [filterObj.columnName]: { eq: filterObj.search },
+              })),
+            }
+          : undefined;
+
+      // Make the GraphQL request
       const response = await client.graphql({
         query: listUsers,
         variables: {
           limit: pageSize,
           nextToken: nextToken,
+          ...(filter && { filter }), // Include filter only if it exists
         },
       });
 
+      // Extract data and update state
       const { items, nextToken: newNextToken } = response.data.listUsers;
       setUsers(items);
       setHasMore(!!newNextToken);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      messageApi.open({
+        type: "error",
+        content: "Error fetching users. Please try again later.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      if (newNextToken) {
-        setNextTokens((prev) => ({
-          ...prev,
-          [current]: newNextToken,
-        }));
-      }
+  const listSearchedUsersData = async () => {
+    try {
+      setLoading(true);
+      const { current, pageSize } = tableParams.pagination;
+      const nextToken = current === 1 ? null : nextTokens[current - 1];
 
-      let totalUsers = 0;
-      let paginationToken = null;
+      // Construct the filter object from the searchFilter state
+      const filter =
+        searchFilter.length > 0
+          ? {
+              and: searchFilter.map((filterObj) => ({
+                [filterObj.columnName]: { eq: filterObj.search },
+              })),
+            }
+          : undefined;
 
-      try {
-        do {
-          const response = await client.graphql({
-            query: listUsers,
-            variables: { limit: 100, nextToken: paginationToken },
-          });
+      // Make the GraphQL request
+      const response = await client.graphql({
+        query: listUsers,
+        variables: {
+          limit: pageSize,
+          nextToken: nextToken,
+          filter: filter,
+        },
+      });
 
-          if (!response.data || !response.data.listUsers) {
-            console.error("Invalid response format:", response);
-            messageApi.open({
-              type: "error",
-              content:
-                "Error fetching users. Invalid response from the server.",
-            });
-
-            break;
-          }
-
-          const fetchedUsers = response.data.listUsers.items;
-          paginationToken = response.data.listUsers.nextToken;
-
-          totalUsers += fetchedUsers.length;
-        } while (paginationToken);
-
-        setTableParams((prev) => ({
-          ...prev,
-          pagination: {
-            ...prev.pagination,
-            total: totalUsers,
-          },
-        }));
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        messageApi.open({
-          type: "error",
-          content: "Error fetching users. Please try again later.",
-        });
-      }
+      // Extract data and update state
+      const { items, nextToken: newNextToken } = response.data.listUsers;
+      setUsers(items);
+      setHasMore(!!newNextToken);
     } catch (error) {
       console.error("Error fetching users:", error);
       messageApi.open({
@@ -108,6 +260,7 @@ const userManagmentPage = () => {
   };
 
   useEffect(() => {
+    fetchTotalCount();
     listUsersData();
   }, []);
 
@@ -124,6 +277,7 @@ const userManagmentPage = () => {
 
   const handleEditUser = async (values, setSubmitting) => {
     setSubmitting(true);
+
     try {
       const editedUser = {
         id: values.id,
@@ -216,19 +370,50 @@ const userManagmentPage = () => {
 
   // START - Search Filter
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    console.log(
-      "selectedkeys",
-      selectedKeys,
-      "confirm----------------",
-      confirm,
-      "dataIndex",
-      dataIndex
-    );
-
     confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
+
+    setSearchFilter((prev) => {
+      const updatedFilters = [...prev];
+
+      const searchValue = selectedKeys?.[0]?.trim();
+
+      if (!searchValue) {
+        const existingFilterIndex = updatedFilters.findIndex(
+          (filter) => filter.columnName === dataIndex
+        );
+
+        if (existingFilterIndex !== -1) {
+          updatedFilters.splice(existingFilterIndex, 1);
+        }
+
+        return updatedFilters;
+      }
+
+      const existingFilterIndex = updatedFilters.findIndex(
+        (filter) => filter.columnName === dataIndex
+      );
+
+      if (existingFilterIndex !== -1) {
+        updatedFilters[existingFilterIndex] = {
+          columnName: dataIndex,
+          search: searchValue,
+        };
+      } else {
+        updatedFilters.push({ columnName: dataIndex, search: searchValue });
+      }
+
+      return updatedFilters;
+    });
   };
+
+  useEffect(() => {
+    fetchSearchedTotalCount();
+    listSearchedUsersData();
+  }, [searchFilter]);
+
+  useEffect(() => {
+    console.log("Search Filter", searchFilter);
+  }, [searchFilter]);
 
   const handleReset = (clearFilters) => {
     clearFilters();
@@ -324,20 +509,26 @@ const userManagmentPage = () => {
         }
       },
     },
-    render: (text) =>
-      searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{
-            backgroundColor: "#ffc069",
-            padding: 0,
-          }}
-          searchWords={[searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ""}
-        />
-      ) : (
-        text
-      ),
+    render: (text, record, index) => {
+      // Include record and index if needed
+      const relevantFilter = searchFilter.find(
+        (filter) => filter.columnName === dataIndex
+      );
+
+      if (relevantFilter && relevantFilter.search) {
+        // Check if a filter exists for this column *and* has a search term
+        return (
+          <Highlighter
+            highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
+            searchWords={[relevantFilter.search]} // Use the search term from the filter
+            autoEscape
+            textToHighlight={text ? text.toString() : ""}
+          />
+        );
+      } else {
+        return text; // Return original text if no filter or no search term
+      }
+    },
   });
   // END - Search Filter
 
@@ -404,8 +595,10 @@ const userManagmentPage = () => {
   }, [tableParams.pagination.current, tableParams.pagination.pageSize]);
 
   const handleTableChange = (pagination, filters, sorter) => {
+    console.log(pagination, filters, sorter);
+
     if (pagination.pageSize !== tableParams.pagination.pageSize) {
-      setNextTokens({});
+      setNextTokens([]);
       setHasMore(true);
       setTableParams({
         pagination: {
@@ -426,6 +619,14 @@ const userManagmentPage = () => {
     }
   };
 
+  if (isContentLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
     <>
       {contextHolder}
@@ -441,8 +642,6 @@ const userManagmentPage = () => {
             ...tableParams.pagination,
             showSizeChanger: true,
             pageSizeOptions: ["10", "20", "50"],
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${hasMore ? "many" : total} items`,
           }}
           loading={loading}
           onChange={handleTableChange}
