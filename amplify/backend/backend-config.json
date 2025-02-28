@@ -1,0 +1,94 @@
+{
+  "api": {
+    "coffeeportal": {
+      "dependsOn": [],
+      "output": {
+        "authConfig": {
+          "additionalAuthenticationProviders": [],
+          "defaultAuthentication": {
+            "apiKeyConfig": {
+              "apiKeyExpirationDays": 7
+            },
+            "authenticationType": "API_KEY"
+          }
+        }
+      },
+      "providerPlugin": "awscloudformation",
+      "service": "AppSync"
+    }
+  },
+  "auth": {
+    "coffeeportal3a26a9a6": {
+      "customAuth": false,
+      "dependsOn": [],
+      "frontendAuthConfig": {
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [
+          "SMS"
+        ],
+        "passwordProtectionSettings": {
+          "passwordPolicyCharacters": [],
+          "passwordPolicyMinLength": 8
+        },
+        "signupAttributes": [
+          "EMAIL"
+        ],
+        "socialProviders": [],
+        "usernameAttributes": [
+          "EMAIL"
+        ],
+        "verificationMechanisms": [
+          "EMAIL"
+        ]
+      },
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito"
+    }
+  },
+  "function": {
+    "addDummyDataInUsers": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "saveRegisteredUser": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_addDummyDataInUsers_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "addDummyDataInUsers"
+        }
+      ]
+    },
+    "AMPLIFY_function_addDummyDataInUsers_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "addDummyDataInUsers"
+        }
+      ]
+    },
+    "AMPLIFY_function_saveRegisteredUser_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "saveRegisteredUser"
+        }
+      ]
+    },
+    "AMPLIFY_function_saveRegisteredUser_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "saveRegisteredUser"
+        }
+      ]
+    }
+  }
+}

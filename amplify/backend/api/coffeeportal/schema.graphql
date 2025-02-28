@@ -1,0 +1,48 @@
+# This "input" configures a global authorization rule to enable public access to
+# all models in this schema. Learn more about authorization rules here: https://docs.amplify.aws/cli/graphql/authorization-rules
+input AMPLIFY {
+  globalAuthRule: AuthRule = { allow: public }
+} # FOR TESTING ONLY!
+type Users @model {
+  id: ID!
+  email: String!
+  name: String!
+  phoneNumber: String!
+  paymentType: String!
+  balance: Float
+  purchaseCount: Int
+  freeDrinks: Int
+  coins: Int
+  stamps: Int
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  deposits: [Deposits] @hasMany(indexName: "byUser", fields: ["id"])
+  payments: [Payments] @hasMany(indexName: "byUser", fields: ["id"])
+}
+
+type Deposits @model {
+  id: ID!
+  userID: ID! @index(name: "byUser")
+  amount: Float
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  user: Users @belongsTo(fields: ["userID"])
+}
+
+type Payments @model {
+  id: ID!
+  userID: ID! @index(name: "byUser")
+  stamps: Int
+  amount: Float
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  user: Users @belongsTo(fields: ["userID"])
+}
+
+type Drinks @model {
+  id: ID!
+  name: String!
+  price: Float
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}

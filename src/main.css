@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+.bg-primary {
+  background-color: black !important;
+}
+
+.text-primary {
+  color: black !important;
+}
+
+.border-primary {
+  border-color: black !important;
+}
+
+.ant-spin-dot-spin i {
+  color: black !important;
+}
+
+.ant-table {
+  border: 1px solid rgb(71, 18, 18) !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+}
+
+.ant-table-thead .ant-table-cell {
+  color: white !important;
+  background: black !important;
+}
+
+.ant-table-thead .ant-table-column-sorter-inner svg {
+  fill: white !important;
+  stroke: white !important;
+}
+
+.anticon-search svg {
+  fill: white !important;
+  stroke: white !important;
+}
+
+.ant-select-outlined,
+.ant-pagination-item-active a {
+  color: black !important;
+}
+
+.ant-pagination-item-active {
+  border-color: black !important;
+}
+
+.ant-select-selection-item {
+  color: black !important;
+}
+
+/* Modal Title */
+.ant-modal-header {
+  @apply !mb-6;
+}
+.ant-modal-title {
+  @apply !text-2xl;
+}
+.ant-form-item-label {
+  @apply !font-medium;
+}
+/* Modal Title */

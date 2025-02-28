@@ -1,0 +1,33 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-coffeeportal-dev-cb3f4-authRole",
+      "UnauthRoleArn": "arn:aws:iam::812096089383:role/amplify-coffeeportal-dev-cb3f4-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::812096089383:role/amplify-coffeeportal-dev-cb3f4-authRole",
+      "Region": "eu-north-1",
+      "DeploymentBucketName": "amplify-coffeeportal-dev-cb3f4-deployment",
+      "UnauthRoleName": "amplify-coffeeportal-dev-cb3f4-unauthRole",
+      "StackName": "amplify-coffeeportal-dev-cb3f4",
+      "StackId": "arn:aws:cloudformation:eu-north-1:812096089383:stack/amplify-coffeeportal-dev-cb3f4/f5f6e990-f408-11ef-b86d-0a79b4c480cf",
+      "AmplifyAppId": "d3l45ctfu9e8x3"
+    },
+    "categories": {
+      "auth": {
+        "coffeeportal3a26a9a6": {}
+      },
+      "api": {
+        "coffeeportal": {}
+      },
+      "function": {
+        "saveRegisteredUser": {
+          "deploymentBucketName": "amplify-coffeeportal-dev-cb3f4-deployment",
+          "s3Key": "amplify-builds/saveRegisteredUser-7579516f454f6c5a2b35-build.zip"
+        },
+        "addDummyDataInUsers": {
+          "deploymentBucketName": "amplify-coffeeportal-dev-cb3f4-deployment",
+          "s3Key": "amplify-builds/addDummyDataInUsers-65657867497633333665-build.zip"
+        }
+      }
+    }
+  }
+}
