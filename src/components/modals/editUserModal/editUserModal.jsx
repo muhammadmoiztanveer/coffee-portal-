@@ -1,7 +1,10 @@
-import React, { useEffect } from "react";
-import { Modal, Button, Form, Input } from "antd";
+import React, { useEffect, useState } from "react";
+import { Modal, Button, Form } from "antd";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
+import { ErrorMessage } from "formik";
 
 const EditUserModal = ({
   isVisible,
@@ -10,16 +13,21 @@ const EditUserModal = ({
   initialValues,
   onSubmit,
 }) => {
+  const [phoneNumber, setPhoneNumber] = useState(
+    initialValues?.phoneNumber || ""
+  );
+  const [selectedCountryCode, setSelectedCountryCode] = useState(
+    initialValues?.countryCode || ""
+  );
+  const [phoneNumberWithoutCountryCode, setPhoneNumberWithoutCountryCode] =
+    useState("");
+
   const validationSchema = Yup.object().shape({
     email: Yup.string()
       .email("Invalid email format")
       .required("Email is required"),
     name: Yup.string().required("Customer Name is required"),
-    phoneNumber: Yup.string()
-      .matches(/^[0-9]+$/, "Phone number must contain only digits")
-      .min(10, "Phone number must be at least 10 digits")
-      .max(15, "Phone number cannot exceed 15 digits")
-      .required("Phone Number is required"),
+    phone: Yup.string().required("Phone number is required"), // For formik validation
     balance: Yup.number()
       .typeError("Deposit Balance must be a number")
       .required("Deposit Balance is required"),
@@ -36,7 +44,7 @@ const EditUserModal = ({
     initialValues: initialValues || {
       email: "",
       name: "",
-      phoneNumber: "",
+      phone: "", // This will be used only for validation
       freeDrinks: 0,
       balance: 0,
       coins: 0,
@@ -45,7 +53,16 @@ const EditUserModal = ({
     validationSchema: validationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        await onSubmit(values, setSubmitting);
+        const combinedPhoneNumber = `+${phoneNumber.replace(/\D/g, "")}`;
+        await onSubmit(
+          {
+            ...values,
+            phoneNumber: combinedPhoneNumber,
+            countryCode: selectedCountryCode,
+            phoneNumberWithoutCountryCode: phoneNumberWithoutCountryCode,
+          },
+          setSubmitting
+        );
         onCancel();
         formik.resetForm();
       } catch (error) {
@@ -58,7 +75,12 @@ const EditUserModal = ({
 
   useEffect(() => {
     if (initialValues) {
-      formik.setValues(initialValues);
+      formik.setValues({
+        ...initialValues,
+        phone: initialValues.phoneNumber, // Set phone field for validation
+      });
+      setPhoneNumber(initialValues.phoneNumber);
+      setSelectedCountryCode(initialValues.countryCode);
     }
   }, [initialValues]);
 
@@ -130,27 +152,46 @@ const EditUserModal = ({
           />
         </Form.Item>
 
-        <Form.Item
-          label="Phone Number"
-          validateStatus={
-            formik.touched.phoneNumber && formik.errors.phoneNumber
-              ? "error"
-              : ""
-          }
-          help={
-            formik.touched.phoneNumber && formik.errors.phoneNumber
-              ? formik.errors.phoneNumber
-              : ""
-          }
-          className="col-span-1 "
-        >
-          <Input
-            type="tel"
-            placeholder="Phone Number"
-            name="phoneNumber"
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            value={formik.values.phoneNumber}
+        <Form.Item label="Phone Number" className="col-span-1">
+          <PhoneInput
+            country={"us"}
+            value={phoneNumber}
+            onChange={(phone, data) => {
+              const rawPhone = phone.replace(/\D/g, "");
+              setPhoneNumber(phone);
+              formik.setFieldValue("phone", rawPhone);
+
+              if (data && data.dialCode && rawPhone) {
+                const dialCode = data.dialCode;
+                const number = rawPhone.startsWith(dialCode)
+                  ? rawPhone.slice(dialCode.length)
+                  : rawPhone;
+                const code = `+${dialCode}`;
+                const phoneNumberWithoutCountryCode = number;
+
+                setSelectedCountryCode(code);
+                setPhoneNumberWithoutCountryCode(phoneNumberWithoutCountryCode);
+              }
+            }}
+            inputStyle={{
+              width: "100%",
+              height: "40px",
+              borderRadius: "10px",
+              borderTopRightRadius: "8px",
+              borderBottomRightRadius: "8px",
+              borderLeft: "none",
+              paddingLeft: "55px",
+            }}
+            buttonStyle={{
+              borderTopLeftRadius: "8px",
+              borderBottomLeftRadius: "8px",
+              padding: "5px",
+            }}
+          />
+          <ErrorMessage
+            name="phone"
+            component="div"
+            className="text-red-500 text-sm"
           />
         </Form.Item>
 
@@ -225,11 +266,7 @@ const EditUserModal = ({
           validateStatus={
             formik.touched.freeDrinks && formik.errors.freeDrinks ? "error" : ""
           }
-          help={
-            formik.touched.freeDrinks && formik.errors.freeDrinks
-              ? formik.errors.freeDrinks
-              : ""
-          }
+          help={formik.touched.freeDrinks && formik.errors.freeDrinks}
         >
           <Input
             type="number"

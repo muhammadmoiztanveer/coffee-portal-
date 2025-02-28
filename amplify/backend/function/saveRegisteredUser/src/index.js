@@ -7,7 +7,9 @@ export const handler = async (event) => {
     const userId = event.request.userAttributes.sub;
     const email = event.request.userAttributes.email;
     const name = event.request.userAttributes.name;
-    const phoneNumber = event.request.userAttributes.phone_number;
+    const phoneNumber = event.request.userAttributes["custom:phoneNumber"];
+    const countryCode = event.request.userAttributes["custom:countryCode"];
+    const fullPhoneNumber = event.request.userAttributes.phone_number;
 
     const balance = 0;
     const freeDrinks = 0;
@@ -24,12 +26,15 @@ export const handler = async (event) => {
         name: name,
         paymentType: paymentType,
         phoneNumber: phoneNumber,
+        countryCode: countryCode,
+        fullPhoneNumber: fullPhoneNumber,
         balance: balance,
         freeDrinks: freeDrinks,
         purchaseCount: purchaseCount,
         coins: coins,
         stamps: stamps,
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
     };
 

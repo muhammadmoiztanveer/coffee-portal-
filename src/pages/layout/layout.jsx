@@ -10,6 +10,7 @@ import { Spin, Button } from "antd";
 import Coffee from "@/assets/ice-coffee.png";
 import User from "@/assets/user.png";
 import { fetchAuthSession } from "aws-amplify/auth";
+import SignOutModal from "../../components/modals/signOutModal/signOutModal";
 import "@/main.css";
 
 const Layout = () => {
@@ -18,6 +19,7 @@ const Layout = () => {
   const [activeMenuId, setActiveMenuId] = useState(1);
   const [username, setUsername] = useState("");
   const [userType, setUserType] = useState("");
+  const [isSignOutModalVisible, setIsSignOutModalVisible] = useState(false);
 
   const navigate = useNavigate();
 
@@ -35,6 +37,14 @@ const Layout = () => {
       console.error("Error fecthing currentAuthenticatedUser in layout", err);
       navigate("/login");
     }
+  }
+
+  function showSignOutModal() {
+    setIsSignOutModalVisible(true);
+  }
+
+  function hideSignOutModal() {
+    setIsSignOutModalVisible(false);
   }
 
   useEffect(() => {
@@ -120,6 +130,7 @@ const Layout = () => {
             variant="solid"
             size="large"
             className="mb-24"
+            onClick={showSignOutModal}
           >
             Sign Out
           </Button>
@@ -129,6 +140,11 @@ const Layout = () => {
           <Outlet />
         </div>
       </div>
+
+      <SignOutModal
+        isVisible={isSignOutModalVisible}
+        onCancel={hideSignOutModal}
+      />
     </div>
   );
 };

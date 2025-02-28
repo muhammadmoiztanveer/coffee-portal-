@@ -7,7 +7,9 @@ export const getUsers = /* GraphQL */ `
       id
       email
       name
+      countryCode
       phoneNumber
+      fullPhoneNumber
       paymentType
       balance
       purchaseCount
@@ -39,7 +41,9 @@ export const listUsers = /* GraphQL */ `
         id
         email
         name
+        countryCode
         phoneNumber
+        fullPhoneNumber
         paymentType
         balance
         purchaseCount
@@ -67,7 +71,9 @@ export const getDeposits = /* GraphQL */ `
         id
         email
         name
+        countryCode
         phoneNumber
+        fullPhoneNumber
         paymentType
         balance
         purchaseCount
@@ -115,7 +121,9 @@ export const getPayments = /* GraphQL */ `
         id
         email
         name
+        countryCode
         phoneNumber
+        fullPhoneNumber
         paymentType
         balance
         purchaseCount

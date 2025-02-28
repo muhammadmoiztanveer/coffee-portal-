@@ -7,7 +7,9 @@ type Users @model {
   id: ID!
   email: String!
   name: String!
+  countryCode: String!
   phoneNumber: String!
+  fullPhoneNumber: String!
   paymentType: String!
   balance: Float
   purchaseCount: Int

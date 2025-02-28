@@ -622,8 +622,8 @@ const userManagmentPage = () => {
     },
     {
       title: "Phone Number",
-      dataIndex: "phoneNumber",
-      ...getColumnSearchProps("phoneNumber"),
+      dataIndex: "fullPhoneNumber",
+      ...getColumnSearchProps("fullPhoneNumber"),
     },
     {
       title: "Total Balance",

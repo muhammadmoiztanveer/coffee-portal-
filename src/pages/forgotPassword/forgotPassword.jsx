@@ -193,7 +193,8 @@ const ForgotPasswordPage = () => {
 
                 <Button
                   size="large"
-                  type="primary"
+                  color="default"
+                  variant="solid"
                   htmlType="submit"
                   block
                   disabled={!isValid}
@@ -303,7 +304,8 @@ const ForgotPasswordPage = () => {
 
                   <Button
                     size="large"
-                    type="primary"
+                    color="default"
+                    variant="solid"
                     htmlType="submit"
                     block
                     loading={isSubmitting}

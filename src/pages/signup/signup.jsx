@@ -7,6 +7,8 @@ import { Input, Button } from "antd";
 import { Link } from "react-router-dom";
 import { signUp } from "aws-amplify/auth";
 import { getCurrentUser } from "aws-amplify/auth";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 // Validation schema using Yup
 const SignupSchema = Yup.object().shape({
@@ -25,8 +27,11 @@ const SignUpPage = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
   const [loading, setLoading] = useState(true);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [selectedCountryCode, setSelectedCountryCode] = useState("");
+  const [phoneNumberWithoutCountryCode, setPhoneNumberWithoutCountryCode] =
+    useState("");
 
   useEffect(() => {
     const checkAuthSession = async () => {
@@ -51,19 +56,31 @@ const SignUpPage = () => {
   const handleSignup = async (values, { setSubmitting, setErrors }) => {
     try {
       console.log("Form values:", values);
+      const combinedPhoneNumber = `+${phoneNumber.replace(/\D/g, "")}`;
+
+      // console.log(
+      //   "phone numberr",
+      //   combinedPhoneNumber,
+      //   selectedCountryCode,
+      //   phoneNumberWithoutCountryCode
+      // );
+
       const { isSignUpComplete, userId, nextStep } = await signUp({
         username: values.email,
         password: values.password,
         options: {
           userAttributes: {
             email: values.email,
-            phone_number: values.phone,
+            phone_number: combinedPhoneNumber,
             name: values.name,
             "custom:type": "Admin",
+            "custom:countryCode": `${selectedCountryCode}`,
+            "custom:phoneNumber": `${phoneNumberWithoutCountryCode}`,
           },
           autoSignIn: true,
         },
       });
+      
       console.log("SignUp complete:", isSignUpComplete);
       console.log("User ID:", userId);
 
@@ -79,26 +96,20 @@ const SignUpPage = () => {
   return (
     <div className="flex justify-center items-center h-screen bg-slate-100">
       <div className="w-full max-w-md p-8 bg-white shadow-none rounded-lg">
-        {/* <h2 className="text-3xl font-bold text-center mb-2">
-          Join the Community!
-        </h2>
-        <p className="text-center text-gray-600 mb-6">
-          Create an account and start your journey with us.
-        </p> */}
         <h2 className="text-2xl font-bold mb-4 text-center">Sign Up</h2>
 
         <Formik
           initialValues={{
             email: "",
             name: "",
-            phone: "",
+            phone: "", // This will be used only for validation
             password: "",
             confirmPassword: "",
           }}
           validationSchema={SignupSchema}
           onSubmit={handleSignup}
         >
-          {({ isSubmitting }) => (
+          {({ isSubmitting, setFieldValue }) => (
             <Form className="mt-6 space-y-4">
               {/* Email Field */}
               <div>
@@ -134,11 +145,43 @@ const SignUpPage = () => {
 
               {/* Phone Field */}
               <div>
-                <Field name="phone">
-                  {({ field }) => (
-                    <Input {...field} size="large" placeholder="Phone Number" />
-                  )}
-                </Field>
+                <PhoneInput
+                  country={"us"}
+                  value={phoneNumber}
+                  onChange={(phone, data) => {
+                    const rawPhone = phone.replace(/\D/g, "");
+                    setPhoneNumber(phone);
+                    setFieldValue("phone", rawPhone);
+
+                    if (data && data.dialCode && rawPhone) {
+                      const dialCode = data.dialCode;
+                      const number = rawPhone.startsWith(dialCode)
+                        ? rawPhone.slice(dialCode.length)
+                        : rawPhone;
+                      const code = `+${dialCode}`;
+                      const phoneNumberWithoutCountryCode = number;
+
+                      setSelectedCountryCode(code);
+                      setPhoneNumberWithoutCountryCode(
+                        phoneNumberWithoutCountryCode
+                      );
+                    }
+                  }}
+                  inputStyle={{
+                    width: "100%",
+                    height: "40px",
+                    borderRadius: "10px",
+                    borderTopRightRadius: "8px",
+                    borderBottomRightRadius: "8px",
+                    borderLeft: "none",
+                    paddingLeft: "55px",
+                  }}
+                  buttonStyle={{
+                    borderTopLeftRadius: "8px",
+                    borderBottomLeftRadius: "8px",
+                    padding: "5px",
+                  }}
+                />
                 <ErrorMessage
                   name="phone"
                   component="div"
@@ -212,7 +255,8 @@ const SignUpPage = () => {
               <div className="mt-8">
                 <Button
                   size="large"
-                  type="primary"
+                  color="default"
+                  variant="solid"
                   htmlType="submit"
                   block
                   loading={isSubmitting}

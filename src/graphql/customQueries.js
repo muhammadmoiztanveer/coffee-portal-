@@ -68,7 +68,7 @@ export const GetUserWithLastDeposit = /* GraphQL */ `
       createdAt
       updatedAt
       deposits(
-        sortDirection: DESC # Newest first
+        sortDirection: ASC # Oldest first
         limit: 1 # Get only the last deposit
       ) {
         items {
@@ -124,7 +124,7 @@ export const GetUserWithLastPayment = /* GraphQL */ `
       stamps
       createdAt
       updatedAt
-      payments(limit: $limit, nextToken: $nextToken, sortDirection: DESC) {
+      payments(limit: $limit, nextToken: $nextToken, sortDirection: ASC) {
         items {
           id
           amount

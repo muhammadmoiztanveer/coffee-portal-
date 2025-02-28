@@ -122,7 +122,8 @@ const registrationOTPPage = () => {
           <div>
             <Button
               size="large"
-              type="primary"
+              color="default"
+              variant="solid"
               htmlType="submit"
               block
               onClick={handleSubmit}

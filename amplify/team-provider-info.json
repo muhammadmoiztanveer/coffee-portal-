@@ -21,7 +21,7 @@
       "function": {
         "saveRegisteredUser": {
           "deploymentBucketName": "amplify-coffeeportal-dev-cb3f4-deployment",
-          "s3Key": "amplify-builds/saveRegisteredUser-7579516f454f6c5a2b35-build.zip"
+          "s3Key": "amplify-builds/saveRegisteredUser-41636e45526f4a747a39-build.zip"
         },
         "addDummyDataInUsers": {
           "deploymentBucketName": "amplify-coffeeportal-dev-cb3f4-deployment",

@@ -248,7 +248,7 @@ const paymentManagmentPage = () => {
       const despositHistory = {
         userID: values.id,
         amount: values.depositBalance,
-        paymentType: values.paymentType,
+        // paymentType: values.paymentType,
       };
 
       const createDepositHistoryResposne = await client.graphql({
@@ -282,6 +282,8 @@ const paymentManagmentPage = () => {
       query: GetUserWithLastDeposit,
       variables: { userId: `${userId}` },
     });
+
+    console.log("last depositsssss", getUserWithLastDepositResponse);
 
     const userInfo = getUserWithLastDepositResponse.data.getUsers;
 
@@ -344,6 +346,7 @@ const paymentManagmentPage = () => {
     clearFilters();
     setSearchText("");
   };
+
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
       setSelectedKeys,

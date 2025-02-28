@@ -10,7 +10,9 @@ export const createUsers = /* GraphQL */ `
       id
       email
       name
+      countryCode
       phoneNumber
+      fullPhoneNumber
       paymentType
       balance
       purchaseCount
@@ -40,7 +42,9 @@ export const updateUsers = /* GraphQL */ `
       id
       email
       name
+      countryCode
       phoneNumber
+      fullPhoneNumber
       paymentType
       balance
       purchaseCount
@@ -70,7 +74,9 @@ export const deleteUsers = /* GraphQL */ `
       id
       email
       name
+      countryCode
       phoneNumber
+      fullPhoneNumber
       paymentType
       balance
       purchaseCount
@@ -106,7 +112,9 @@ export const createDeposits = /* GraphQL */ `
         id
         email
         name
+        countryCode
         phoneNumber
+        fullPhoneNumber
         paymentType
         balance
         purchaseCount
@@ -136,7 +144,9 @@ export const updateDeposits = /* GraphQL */ `
         id
         email
         name
+        countryCode
         phoneNumber
+        fullPhoneNumber
         paymentType
         balance
         purchaseCount
@@ -166,7 +176,9 @@ export const deleteDeposits = /* GraphQL */ `
         id
         email
         name
+        countryCode
         phoneNumber
+        fullPhoneNumber
         paymentType
         balance
         purchaseCount
@@ -197,7 +209,9 @@ export const createPayments = /* GraphQL */ `
         id
         email
         name
+        countryCode
         phoneNumber
+        fullPhoneNumber
         paymentType
         balance
         purchaseCount
@@ -228,7 +242,9 @@ export const updatePayments = /* GraphQL */ `
         id
         email
         name
+        countryCode
         phoneNumber
+        fullPhoneNumber
         paymentType
         balance
         purchaseCount
@@ -259,7 +275,9 @@ export const deletePayments = /* GraphQL */ `
         id
         email
         name
+        countryCode
         phoneNumber
+        fullPhoneNumber
         paymentType
         balance
         purchaseCount
