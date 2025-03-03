@@ -191,6 +191,7 @@ export const listDrinks = /* GraphQL */ `
     }
   }
 `;
+
 export const usersByNameAndCreatedAt = /* GraphQL */ `
   query UsersByNameAndCreatedAt(
     $name: String!

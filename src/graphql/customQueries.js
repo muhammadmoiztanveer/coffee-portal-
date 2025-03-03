@@ -139,8 +139,8 @@ export const GetUserWithLastPayment = /* GraphQL */ `
 
 export const getNextTokensForUsersByNameAndFullPhoneNumber = /* GraphQL */ `
   query UsersByNameAndFullPhoneNumber(
-    $name: String
-    $fullPhoneNumber: ModelStringKeyConditionInput
+    $name: String!
+    $fullPhoneNumber: String!
     $sortDirection: ModelSortDirection
     $filter: ModelUsersFilterInput
     $limit: Int
@@ -162,7 +162,7 @@ export const getNextTokensForUsersByNameAndFullPhoneNumber = /* GraphQL */ `
 
 export const getNextTokensForUsersByNameAndCreatedAt = /* GraphQL */ `
   query UsersByNameAndCreatedAt(
-    $name: String
+    $name: String!
     $createdAt: ModelStringKeyConditionInput
     $sortDirection: ModelSortDirection
     $filter: ModelUsersFilterInput
@@ -185,7 +185,7 @@ export const getNextTokensForUsersByNameAndCreatedAt = /* GraphQL */ `
 
 export const getNextTokensForUsersByFullPhoneNumberAndCreatedAt = /* GraphQL */ `
   query UsersByFullPhoneNumberAndCreatedAt(
-    $fullPhoneNumber: String
+    $fullPhoneNumber: String!
     $createdAt: ModelStringKeyConditionInput
     $sortDirection: ModelSortDirection
     $filter: ModelUsersFilterInput

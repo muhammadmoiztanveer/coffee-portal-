@@ -136,6 +136,15 @@ const userManagmentPage = () => {
   };
 
   const fetchSearchedTotalCount = async () => {
+    const response = await client.graphql({
+      query: getNextTokensForUsersByNameAndCreatedAt,
+      variables: {
+        name: "Muhammad Moiz",
+      },
+    });
+
+    console.log("responseee", response);
+
     if (isFetching.current) return;
     isFetching.current = true;
     setLoading(true);
@@ -154,58 +163,77 @@ const userManagmentPage = () => {
     console.log("total count usersss", nameFilter, phoneFilter);
 
     try {
-      let paginationToken = null;
-
-      setNextTokens([]);
-
-      do {
-        let response;
-
-        if (phoneFilter && !nameFilter) {
-          response = await client.graphql({
-            query: getNextTokensForUsersByFullPhoneNumberAndCreatedAt,
-            variables: {
-              limit: tableParams.pagination.pageSize,
-              nextToken: paginationToken,
-            },
-          });
-        } else if (nameFilter && !phoneFilter) {
-          response = await client.graphql({
-            query: getNextTokensForUsersByNameAndCreatedAt,
-            variables: {
-              limit: tableParams.pagination.pageSize,
-              nextToken: paginationToken,
-            },
-          });
-        } else if (nameFilter && phoneFilter) {
-          response = await client.graphql({
-            query: getNextTokensForUsersByNameAndFullPhoneNumber,
-            variables: {
-              limit: tableParams.pagination.pageSize,
-              nextToken: paginationToken,
-            },
-          });
-        }
-
-        // console.log("Fethcing resposneeeeeeeeee", response);
-
-        if (!response.data || !response.data.listUsers) {
-          console.error("Invalid response format:", response);
-
-          messageApi.open({
-            type: "error",
-            content: "Error fetching users. Invalid response from the server.",
-          });
-
-          break;
-        }
-
-        paginationToken = response.data.listUsers.nextToken;
-
-        if (paginationToken) {
-          setNextTokens((prev) => [...prev, paginationToken]);
-        }
-      } while (paginationToken);
+      // let paginationToken = null;
+      // setNextTokens([]);
+      // do {
+      //   let response;
+      //   if (phoneFilter && !nameFilter) {
+      //     console.log("only phkne");
+      //     response = await client.graphql({
+      //       query: getNextTokensForUsersByFullPhoneNumberAndCreatedAt,
+      //       variables: {
+      //         limit: tableParams.pagination.pageSize,
+      //         fullPhoneNumber: phoneFilter,
+      //         sortDirection: "ASC",
+      //         nextToken: paginationToken,
+      //       },
+      //     });
+      //   } else if (nameFilter && !phoneFilter) {
+      //     console.log("only name");
+      //     response = await client.graphql({
+      //       query: getNextTokensForUsersByNameAndCreatedAt,
+      //       variables: {
+      //         limit: tableParams.pagination.pageSize,
+      //         name: "Moiz",
+      //         sortDirection: "ASC",
+      //         nextToken: paginationToken,
+      //       },
+      //     });
+      //   } else if (nameFilter && phoneFilter) {
+      //     console.log("naem and ophone number");
+      //     response = await client.graphql({
+      //       query: getNextTokensForUsersByNameAndFullPhoneNumber,
+      //       variables: {
+      //         limit: tableParams.pagination.pageSize,
+      //         fullPhoneNumber: phoneFilter,
+      //         name: nameFilter,
+      //         sortDirection: "ASC",
+      //         nextToken: paginationToken,
+      //       },
+      //     });
+      //   }
+      //   console.log(
+      //     "response from the total count next token fucntion LOOOP",
+      //     response
+      //   );
+      //   console.log("Query Variables token func:", {
+      //     name: nameFilter,
+      //     fullPhoneNumber: phoneFilter,
+      //     sortDirection: "ASC",
+      //     limit: tableParams.pagination.pageSize,
+      //     nextToken: paginationToken,
+      //   });
+      // if (
+      //   !response?.data ||
+      //   !response?.data?.usersByFullPhoneNumberAndCreatedAt ||
+      //   !response?.data?.usersByNameAndCreatedAt ||
+      //   !response?.data?.usersByNameAndFullPhoneNumber
+      // ) {
+      //   console.error("Invalid response format:", response);
+      //   messageApi.open({
+      //     type: "error",
+      //     content: "Error fetching users. Invalid response from the server.",
+      //   });
+      //   break;
+      // }
+      // paginationToken =
+      //   response.data.usersByFullPhoneNumberAndCreatedAt.nextToken ||
+      //   response.data.usersByNameAndCreatedAt.nextToken ||
+      //   response.data.usersByNameAndFullPhoneNumber.nextToken;
+      // if (paginationToken) {
+      //   setNextTokens((prev) => [...prev, paginationToken]);
+      // }
+      // } while (paginationToken);
     } catch (error) {
       console.error("Error fetching users:", error);
       messageApi.open({
@@ -219,8 +247,8 @@ const userManagmentPage = () => {
   };
 
   const listSearchedUsersData = async () => {
-    let nameFilter = "";
-    let phoneFilter = "";
+    let nameFilter = null;
+    let phoneFilter = null;
 
     searchFilter.forEach((filter) => {
       if (filter.columnName === "name") {
@@ -230,48 +258,75 @@ const userManagmentPage = () => {
       }
     });
 
-    console.log("list usersss", nameFilter, phoneFilter);
+    // console.log(nameFilter, phoneFilter);
+    // console.log("list usersss", nameFilter, phoneFilter);
 
     try {
-      setLoading(true);
-      const { current, pageSize } = tableParams.pagination;
-      const nextToken = current === 1 ? null : nextTokens[current - 1];
+      const response = await client.graphql({
+        query: usersByNameAndCreatedAt,
+        variables: {
+          limit: 10,
+          name: { beginsWith: "T" },
+          sortDirection: "ASC",
+        },
+      });
 
-      let response;
+      console.log("response sdbaslhdkashdhaskhdkjahsjdh", response);
 
-      if (phoneFilter !== "" && nameFilter === "") {
-        response = await client.graphql({
-          query: usersByFullPhoneNumberAndCreatedAt,
-          variables: {
-            limit: pageSize,
-            fullPhoneNumber: phoneFilter,
-            nextToken: nextToken,
-          },
-        });
-      } else if (nameFilter !== "" && phoneFilter === "") {
-        response = await client.graphql({
-          query: usersByNameAndCreatedAt,
-          variables: {
-            limit: pageSize,
-            name: nameFilter,
-            nextToken: nextToken,
-          },
-        });
-      } else if (nameFilter !== "" && phoneFilter !== "") {
-        response = await client.graphql({
-          query: usersByNameAndFullPhoneNumber,
-          variables: {
-            limit: pageSize,
-            name: nameFilter,
-            fullPhoneNumber: phoneFilter,
-            nextToken: nextToken,
-          },
-        });
-      }
+      // setLoading(true);
+      // const { current, pageSize } = tableParams.pagination;
+      // const nextToken = current === 1 ? null : nextTokens[current - 1];
+      // let response;
+      // if (phoneFilter && !nameFilter) {
+      //   response = await client.graphql({
+      //     query: usersByFullPhoneNumberAndCreatedAt,
+      //     variables: {
+      //       limit: pageSize,
+      //       fullPhoneNumber: phoneFilter,
+      //       sortDirection: "ASC",
+      //       nextToken: nextToken,
+      //     },
+      //   });
+      // } else if (nameFilter && !phoneFilter) {
+      //   response = await client.graphql({
+      //     query: usersByNameAndCreatedAt,
+      //     variables: {
+      //       limit: pageSize,
+      //       name: nameFilter,
+      //       sortDirection: "ASC",
+      //       nextToken: nextToken,
+      //     },
+      //   });
+      // } else if (nameFilter && phoneFilter) {
+      //   response = await client.graphql({
+      //     query: usersByNameAndFullPhoneNumber,
+      //     variables: {
+      //       limit: pageSize,
+      //       name: nameFilter,
+      //       fullPhoneNumber: phoneFilter,
+      //       sortDirection: "ASC",
+      //       nextToken: nextToken,
+      //     },
+      //   });
+      // }
+      // console.log(
+      //   "responseeeeeeeeeeEEEEEEEEEEEEE from searched listings",
+      //   response
+      // );
 
-      console.log("responseeeeeeeeeeEEEEEEEEEEEEE", response);
+      // console.log("Query Variables list fucntion:", {
+      //   name: nameFilter,
+      //   fullPhoneNumber: phoneFilter,
+      //   sortDirection: "ASC",
+      //   limit: tableParams.pagination.pageSize,
+      //   nextToken: nextToken,
+      // });
 
-      // const { items } = response.data.listUsers;
+      // const { items } =
+      //   response.data.usersByFullPhoneNumberAndCreatedAt ||
+      //   response.data.usersByNameAndCreatedAt ||
+      //   response.data.usersByNameAndFullPhoneNumber;
+
       // setUsers(items);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -435,22 +490,28 @@ const userManagmentPage = () => {
     console.log("searchFilter chnaged", searchFilter);
 
     setLoading(true);
+
     if (searchFilter.length === 0) {
       setTableParams((prev) => ({
         ...prev,
         pagination: { ...prev.pagination, current: 1 },
       }));
 
-      // setNextTokens([]);
+      setNextTokens([]);
     }
 
-    if (searchFilter.length > 0) {
-      fetchSearchedTotalCount();
-      listSearchedUsersData();
-    } else {
-      fetchTotalCount();
-      listUsersData();
-    }
+    const fetchData = async () => {
+      if (searchFilter.length > 0) {
+        await fetchSearchedTotalCount();
+        await listSearchedUsersData();
+      } else {
+        await fetchTotalCount();
+        await listUsersData();
+      }
+    };
+
+    fetchData();
+
     setLoading(false);
   }, [searchFilter]);
 
