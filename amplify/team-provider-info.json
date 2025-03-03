@@ -25,7 +25,7 @@
         },
         "addDummyDataInUsers": {
           "deploymentBucketName": "amplify-coffeeportal-dev-cb3f4-deployment",
-          "s3Key": "amplify-builds/addDummyDataInUsers-65657867497633333665-build.zip"
+          "s3Key": "amplify-builds/addDummyDataInUsers-41586236374270487431-build.zip"
         }
       }
     }

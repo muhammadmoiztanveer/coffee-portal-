@@ -7,9 +7,9 @@ export const getUsers = /* GraphQL */ `
       id
       email
       name
+      fullPhoneNumber
       countryCode
       phoneNumber
-      fullPhoneNumber
       paymentType
       balance
       purchaseCount
@@ -41,9 +41,9 @@ export const listUsers = /* GraphQL */ `
         id
         email
         name
+        fullPhoneNumber
         countryCode
         phoneNumber
-        fullPhoneNumber
         paymentType
         balance
         purchaseCount
@@ -71,9 +71,9 @@ export const getDeposits = /* GraphQL */ `
         id
         email
         name
+        fullPhoneNumber
         countryCode
         phoneNumber
-        fullPhoneNumber
         paymentType
         balance
         purchaseCount
@@ -121,9 +121,9 @@ export const getPayments = /* GraphQL */ `
         id
         email
         name
+        fullPhoneNumber
         countryCode
         phoneNumber
-        fullPhoneNumber
         paymentType
         balance
         purchaseCount
@@ -182,6 +182,123 @@ export const listDrinks = /* GraphQL */ `
         id
         name
         price
+        createdAt
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
+export const usersByNameAndCreatedAt = /* GraphQL */ `
+  query UsersByNameAndCreatedAt(
+    $name: String!
+    $createdAt: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelUsersFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    usersByNameAndCreatedAt(
+      name: $name
+      createdAt: $createdAt
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        email
+        name
+        fullPhoneNumber
+        countryCode
+        phoneNumber
+        paymentType
+        balance
+        purchaseCount
+        freeDrinks
+        coins
+        stamps
+        createdAt
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
+export const usersByNameAndFullPhoneNumber = /* GraphQL */ `
+  query UsersByNameAndFullPhoneNumber(
+    $name: String!
+    $fullPhoneNumber: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelUsersFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    usersByNameAndFullPhoneNumber(
+      name: $name
+      fullPhoneNumber: $fullPhoneNumber
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        email
+        name
+        fullPhoneNumber
+        countryCode
+        phoneNumber
+        paymentType
+        balance
+        purchaseCount
+        freeDrinks
+        coins
+        stamps
+        createdAt
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
+export const usersByFullPhoneNumberAndCreatedAt = /* GraphQL */ `
+  query UsersByFullPhoneNumberAndCreatedAt(
+    $fullPhoneNumber: String!
+    $createdAt: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelUsersFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    usersByFullPhoneNumberAndCreatedAt(
+      fullPhoneNumber: $fullPhoneNumber
+      createdAt: $createdAt
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        email
+        name
+        fullPhoneNumber
+        countryCode
+        phoneNumber
+        paymentType
+        balance
+        purchaseCount
+        freeDrinks
+        coins
+        stamps
         createdAt
         updatedAt
         __typename

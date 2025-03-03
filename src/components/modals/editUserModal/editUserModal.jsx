@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Button, Form } from "antd";
+import { Modal, Button, Form, Input } from "antd";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import { ErrorMessage } from "formik";
 
 const EditUserModal = ({
   isVisible,
@@ -27,7 +26,7 @@ const EditUserModal = ({
       .email("Invalid email format")
       .required("Email is required"),
     name: Yup.string().required("Customer Name is required"),
-    phone: Yup.string().required("Phone number is required"), // For formik validation
+    phone: Yup.string().required("Phone number is required"),
     balance: Yup.number()
       .typeError("Deposit Balance must be a number")
       .required("Deposit Balance is required"),
@@ -41,16 +40,17 @@ const EditUserModal = ({
   });
 
   const formik = useFormik({
-    initialValues: initialValues || {
-      email: "",
-      name: "",
-      phone: "", // This will be used only for validation
-      freeDrinks: 0,
-      balance: 0,
-      coins: 0,
-      stamps: 0,
+    enableReinitialize: true,
+    initialValues: {
+      email: initialValues?.email || "",
+      name: initialValues?.name || "",
+      phone: initialValues?.phoneNumber || "",
+      freeDrinks: initialValues?.freeDrinks || 0,
+      balance: initialValues?.balance || 0,
+      coins: initialValues?.coins || 0,
+      stamps: initialValues?.stamps || 0,
     },
-    validationSchema: validationSchema,
+    validationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
         const combinedPhoneNumber = `+${phoneNumber.replace(/\D/g, "")}`;
@@ -73,17 +73,6 @@ const EditUserModal = ({
     },
   });
 
-  useEffect(() => {
-    if (initialValues) {
-      formik.setValues({
-        ...initialValues,
-        phone: initialValues.phoneNumber, // Set phone field for validation
-      });
-      setPhoneNumber(initialValues.phoneNumber);
-      setSelectedCountryCode(initialValues.countryCode);
-    }
-  }, [initialValues]);
-
   return (
     <Modal
       title="Edit Record"
@@ -91,14 +80,13 @@ const EditUserModal = ({
       open={isVisible}
       onCancel={onCancel}
       footer={[
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-end gap-4" key="footer">
           <Button key="cancel" onClick={onCancel}>
             Cancel
           </Button>
           <Button
             key="submit"
-            color="default"
-            variant="solid"
+            type="primary"
             onClick={formik.handleSubmit}
             loading={formik.isSubmitting}
             disabled={formik.isSubmitting}
@@ -110,49 +98,45 @@ const EditUserModal = ({
       width={700}
     >
       <Form layout="vertical" className="grid grid-cols-2 gap-x-4">
+        {/* Email Field */}
         <Form.Item
           label="Email"
-          validateStatus={
-            formik.touched.email && formik.errors.email ? "error" : ""
-          }
-          help={
-            formik.touched.email && formik.errors.email
-              ? formik.errors.email
-              : ""
-          }
-          className="col-span-1 "
+          validateStatus={formik.errors.email && "error"}
+          help={formik.errors.email}
+          className="col-span-1"
         >
           <Input
             placeholder="Email"
             name="email"
-            type="email"
+            value={formik.values.email}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            value={formik.values.email}
           />
         </Form.Item>
 
+        {/* Customer Name Field */}
         <Form.Item
           label="Customer Name"
-          validateStatus={
-            formik.touched.name && formik.errors.name ? "error" : ""
-          }
-          help={
-            formik.touched.name && formik.errors.name ? formik.errors.name : ""
-          }
+          validateStatus={formik.errors.name && "error"}
+          help={formik.errors.name}
           className="col-span-1"
         >
           <Input
             placeholder="Customer Name"
             name="name"
-            type="text"
+            value={formik.values.name}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            value={formik.values.name}
           />
         </Form.Item>
 
-        <Form.Item label="Phone Number" className="col-span-1">
+        {/* Phone Number Field */}
+        <Form.Item
+          label="Phone Number"
+          className="col-span-1"
+          validateStatus={formik.errors.phone && "error"}
+          help={formik.errors.phone}
+        >
           <PhoneInput
             country={"us"}
             value={phoneNumber}
@@ -161,25 +145,20 @@ const EditUserModal = ({
               setPhoneNumber(phone);
               formik.setFieldValue("phone", rawPhone);
 
-              if (data && data.dialCode && rawPhone) {
+              if (data?.dialCode && rawPhone) {
                 const dialCode = data.dialCode;
                 const number = rawPhone.startsWith(dialCode)
                   ? rawPhone.slice(dialCode.length)
                   : rawPhone;
                 const code = `+${dialCode}`;
-                const phoneNumberWithoutCountryCode = number;
-
                 setSelectedCountryCode(code);
-                setPhoneNumberWithoutCountryCode(phoneNumberWithoutCountryCode);
+                setPhoneNumberWithoutCountryCode(number);
               }
             }}
             inputStyle={{
               width: "100%",
               height: "40px",
               borderRadius: "10px",
-              borderTopRightRadius: "8px",
-              borderBottomRightRadius: "8px",
-              borderLeft: "none",
               paddingLeft: "55px",
             }}
             buttonStyle={{
@@ -188,93 +167,72 @@ const EditUserModal = ({
               padding: "5px",
             }}
           />
-          <ErrorMessage
-            name="phone"
-            component="div"
-            className="text-red-500 text-sm"
-          />
         </Form.Item>
 
+        {/* Deposit Balance Field */}
         <Form.Item
           label="Deposit Balance"
-          validateStatus={
-            formik.touched.balance && formik.errors.balance ? "error" : ""
-          }
-          help={
-            formik.touched.balance && formik.errors.balance
-              ? formik.errors.balance
-              : ""
-          }
+          validateStatus={formik.errors.balance && "error"}
+          help={formik.errors.balance}
           className="col-span-1"
         >
           <Input
             type="number"
             placeholder="Deposit Balance"
             name="balance"
+            value={formik.values.balance}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            value={formik.values.balance}
           />
         </Form.Item>
 
+        {/* Coins Field */}
         <Form.Item
           label="Coins"
-          validateStatus={
-            formik.touched.coins && formik.errors.coins ? "error" : ""
-          }
-          help={
-            formik.touched.coins && formik.errors.coins
-              ? formik.errors.coins
-              : ""
-          }
+          validateStatus={formik.errors.coins && "error"}
+          help={formik.errors.coins}
           className="col-span-1"
         >
           <Input
             type="number"
             placeholder="Coins"
             name="coins"
+            value={formik.values.coins}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            value={formik.values.coins}
           />
         </Form.Item>
 
+        {/* Stamps Field */}
         <Form.Item
           label="Stamps"
-          validateStatus={
-            formik.touched.stamps && formik.errors.stamps ? "error" : ""
-          }
-          help={
-            formik.touched.stamps && formik.errors.stamps
-              ? formik.errors.stamps
-              : ""
-          }
+          validateStatus={formik.errors.stamps && "error"}
+          help={formik.errors.stamps}
           className="col-span-1"
         >
           <Input
             type="number"
             placeholder="Stamps"
             name="stamps"
+            value={formik.values.stamps}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            value={formik.values.stamps}
           />
         </Form.Item>
 
+        {/* Free Drinks Field */}
         <Form.Item
           label="Free Drinks"
-          validateStatus={
-            formik.touched.freeDrinks && formik.errors.freeDrinks ? "error" : ""
-          }
-          help={formik.touched.freeDrinks && formik.errors.freeDrinks}
+          validateStatus={formik.errors.freeDrinks && "error"}
+          help={formik.errors.freeDrinks}
         >
           <Input
             type="number"
             placeholder="Free Drinks"
             name="freeDrinks"
+            value={formik.values.freeDrinks}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            value={formik.values.freeDrinks}
           />
         </Form.Item>
       </Form>

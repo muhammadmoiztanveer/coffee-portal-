@@ -1,24 +1,33 @@
 import AWS from "aws-sdk";
 import { faker } from "@faker-js/faker";
 
-// Configure the DynamoDB DocumentClient
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
-const tableName = "Users-zg3kajqqjrembjsufgsptkldcm-dev"; // Replace with your actual table name
+const tableName = "Users-zg3kajqqjrembjsufgsptkldcm-dev";
 
-// Function to generate a single user record
 const generateUser = () => {
+  const phoneNumber = faker.phone.number("3#########");
+  const countryCode = "+92";
+  const fullPhoneNumber = countryCode + phoneNumber;
+
   return {
     id: faker.string.uuid(),
     email: faker.internet.email(),
     name: faker.person.fullName(),
-    paymentType: faker.person.fullName(),
-    phoneNumber: faker.phone.number(),
+    paymentType: faker.helpers.arrayElement([
+      "Credit Card",
+      "Debit Card",
+      "Cash",
+      "Mobile Wallet",
+    ]),
+    phoneNumber: phoneNumber,
+    countryCode: countryCode,
+    fullPhoneNumber: fullPhoneNumber,
     balance: parseFloat(faker.finance.amount(0, 1000, 2)),
     freeDrinks: faker.number.int({ min: 0, max: 10 }),
     coins: faker.number.int({ min: 0, max: 500 }),
     stamps: faker.number.int({ min: 0, max: 200 }),
     createdAt: new Date().toISOString(),
-    updatedAt: null,
+    updatedAt: new Date().toISOString(),
   };
 };
 

@@ -4,10 +4,20 @@ import Highlighter from "react-highlight-words";
 import { SearchOutlined, DeleteFilled, EditFilled } from "@ant-design/icons";
 import DeleteModal from "@/components/modals/deleteModal/deleteModal";
 import EditUserModal from "@/components/modals/editUserModal/editUserModal";
-import { getNextTokenForUsers } from "../../graphql/customQueries";
+import {
+  getNextTokenForUsers,
+  getNextTokensForUsersByFullPhoneNumberAndCreatedAt,
+  getNextTokensForUsersByNameAndCreatedAt,
+  getNextTokensForUsersByNameAndFullPhoneNumber,
+} from "../../graphql/customQueries";
 import { listUsers } from "@/graphql/queries";
 import { generateClient } from "aws-amplify/api";
 import { updateUsers, deleteUsers } from "@/graphql/mutations";
+import {
+  usersByFullPhoneNumberAndCreatedAt,
+  usersByNameAndCreatedAt,
+  usersByNameAndFullPhoneNumber,
+} from "../../graphql/queries";
 
 const userManagmentPage = () => {
   const [messageApi, contextHolder] = message.useMessage();
@@ -48,6 +58,8 @@ const userManagmentPage = () => {
         total: totalUsers,
       },
     }));
+
+    console.log("TOTAL USERSS", totalUsers);
   }, [nextTokens]);
 
   const fetchTotalCount = async () => {
@@ -123,128 +135,76 @@ const userManagmentPage = () => {
     }
   };
 
-  // const fetchSearchedTotalCount = async () => {
-  //   if (isFetching.current) return;
-  //   isFetching.current = true;
-  //   setLoading(true);
-
-  //   try {
-  //     let paginationToken = null;
-
-  //     setNextTokens([]);
-
-  //     do {
-  //       const filter =
-  //         searchFilter.length > 0
-  //           ? {
-  //               and: searchFilter.map((filterObj) => ({
-  //                 [filterObj.columnName]: {
-  //                   contains: filterObj.search.toLowerCase(),
-  //                 },
-  //               })),
-  //             }
-  //           : undefined;
-
-  //       const response = await client.graphql({
-  //         query: getNextTokenForUsers,
-  //         variables: {
-  //           limit: tableParams.pagination.pageSize,
-  //           nextToken: paginationToken,
-  //           filter: filter,
-  //         },
-  //       });
-
-  //       console.log("Fethcing resposneeeeeeeeee", response);
-
-  //       if (!response.data || !response.data.listUsers) {
-  //         console.error("Invalid response format:", response);
-
-  //         messageApi.open({
-  //           type: "error",
-  //           content: "Error fetching users. Invalid response from the server.",
-  //         });
-
-  //         break;
-  //       }
-
-  //       paginationToken = response.data.listUsers.nextToken;
-
-  //       if (paginationToken) {
-  //         setNextTokens((prev) => [...prev, paginationToken]);
-  //       }
-  //     } while (paginationToken);
-  //   } catch (error) {
-  //     console.error("Error fetching users:", error);
-  //     messageApi.open({
-  //       type: "error",
-  //       content: "Error fetching users. Please try again later.",
-  //     });
-  //   } finally {
-  //     isFetching.current = false;
-  //     setLoading(false);
-  //   }
-  // };
   const fetchSearchedTotalCount = async () => {
     if (isFetching.current) return;
     isFetching.current = true;
     setLoading(true);
 
+    let nameFilter = null;
+    let phoneFilter = null;
+
+    searchFilter.forEach((filter) => {
+      if (filter.columnName === "name") {
+        nameFilter = filter.search;
+      } else if (filter.columnName === "fullPhoneNumber") {
+        phoneFilter = filter.search;
+      }
+    });
+
+    console.log("total count usersss", nameFilter, phoneFilter);
+
     try {
       let paginationToken = null;
+
       setNextTokens([]);
-      let iterationCount = 0;
-      const MAX_ITERATIONS = 20;
 
       do {
-        if (iterationCount >= MAX_ITERATIONS) {
-          console.error("Max iterations reached. Breaking loop.");
-          break;
+        let response;
+
+        if (phoneFilter && !nameFilter) {
+          response = await client.graphql({
+            query: getNextTokensForUsersByFullPhoneNumberAndCreatedAt,
+            variables: {
+              limit: tableParams.pagination.pageSize,
+              nextToken: paginationToken,
+            },
+          });
+        } else if (nameFilter && !phoneFilter) {
+          response = await client.graphql({
+            query: getNextTokensForUsersByNameAndCreatedAt,
+            variables: {
+              limit: tableParams.pagination.pageSize,
+              nextToken: paginationToken,
+            },
+          });
+        } else if (nameFilter && phoneFilter) {
+          response = await client.graphql({
+            query: getNextTokensForUsersByNameAndFullPhoneNumber,
+            variables: {
+              limit: tableParams.pagination.pageSize,
+              nextToken: paginationToken,
+            },
+          });
         }
 
-        const filter =
-          searchFilter.length > 0
-            ? {
-                and: searchFilter.map((filterObj) => ({
-                  [filterObj.columnName]: {
-                    contains: filterObj.search.toLowerCase(),
-                  },
-                })),
-              }
-            : undefined;
-
-        const response = await client.graphql({
-          query: getNextTokenForUsers,
-          variables: {
-            limit: tableParams.pagination.pageSize,
-            nextToken: paginationToken,
-            filter: filter,
-          },
-        });
-
-        console.log("Fetching response:", response);
+        // console.log("Fethcing resposneeeeeeeeee", response);
 
         if (!response.data || !response.data.listUsers) {
           console.error("Invalid response format:", response);
+
           messageApi.open({
             type: "error",
             content: "Error fetching users. Invalid response from the server.",
           });
+
           break;
         }
 
-        const { items, nextToken } = response.data.listUsers;
+        paginationToken = response.data.listUsers.nextToken;
 
-        if (!items || items.length === 0) {
-          console.log("No more items to fetch.");
-          break;
-        }
-
-        paginationToken = nextToken;
         if (paginationToken) {
           setNextTokens((prev) => [...prev, paginationToken]);
         }
-
-        iterationCount++;
       } while (paginationToken);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -259,41 +219,60 @@ const userManagmentPage = () => {
   };
 
   const listSearchedUsersData = async () => {
-    setLoading(true);
+    let nameFilter = "";
+    let phoneFilter = "";
+
+    searchFilter.forEach((filter) => {
+      if (filter.columnName === "name") {
+        nameFilter = filter.search;
+      } else if (filter.columnName === "fullPhoneNumber") {
+        phoneFilter = filter.search;
+      }
+    });
+
+    console.log("list usersss", nameFilter, phoneFilter);
+
     try {
       setLoading(true);
       const { current, pageSize } = tableParams.pagination;
       const nextToken = current === 1 ? null : nextTokens[current - 1];
 
-      const filter =
-        searchFilter.length > 0
-          ? {
-              and: searchFilter.map((filterObj) => ({
-                [filterObj.columnName]: {
-                  contains: filterObj.search.toLowerCase(),
-                },
-              })),
-            }
-          : undefined;
+      let response;
 
-      const response = await client.graphql({
-        query: listUsers,
-        variables: {
-          nextToken: nextToken,
-          filter: filter,
-        },
-      });
+      if (phoneFilter !== "" && nameFilter === "") {
+        response = await client.graphql({
+          query: usersByFullPhoneNumberAndCreatedAt,
+          variables: {
+            limit: pageSize,
+            fullPhoneNumber: phoneFilter,
+            nextToken: nextToken,
+          },
+        });
+      } else if (nameFilter !== "" && phoneFilter === "") {
+        response = await client.graphql({
+          query: usersByNameAndCreatedAt,
+          variables: {
+            limit: pageSize,
+            name: nameFilter,
+            nextToken: nextToken,
+          },
+        });
+      } else if (nameFilter !== "" && phoneFilter !== "") {
+        response = await client.graphql({
+          query: usersByNameAndFullPhoneNumber,
+          variables: {
+            limit: pageSize,
+            name: nameFilter,
+            fullPhoneNumber: phoneFilter,
+            nextToken: nextToken,
+          },
+        });
+      }
 
-      const { items } = response.data.listUsers;
-      setUsers(items);
+      console.log("responseeeeeeeeeeEEEEEEEEEEEEE", response);
 
-      setTableParams((prev) => ({
-        ...prev,
-        pagination: {
-          ...prev.pagination,
-          total: users.length,
-        },
-      }));
+      // const { items } = response.data.listUsers;
+      // setUsers(items);
     } catch (error) {
       console.error("Error fetching users:", error);
       messageApi.open({
@@ -461,6 +440,7 @@ const userManagmentPage = () => {
         ...prev,
         pagination: { ...prev.pagination, current: 1 },
       }));
+
       // setNextTokens([]);
     }
 
@@ -611,12 +591,12 @@ const userManagmentPage = () => {
     {
       title: "Email",
       dataIndex: "email",
-      // sorter: true,
+      sorter: true,
     },
     {
       title: "Customer Name",
       dataIndex: "name",
-      // sorter: true,
+      sorter: true,
       render: (name) => `${name.first} ${name.last}`,
       ...getColumnSearchProps("name"),
     },

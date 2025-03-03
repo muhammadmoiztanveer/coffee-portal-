@@ -136,3 +136,72 @@ export const GetUserWithLastPayment = /* GraphQL */ `
     }
   }
 `;
+
+export const getNextTokensForUsersByNameAndFullPhoneNumber = /* GraphQL */ `
+  query UsersByNameAndFullPhoneNumber(
+    $name: String
+    $fullPhoneNumber: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelUsersFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    usersByNameAndFullPhoneNumber(
+      name: $name
+      fullPhoneNumber: $fullPhoneNumber
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      nextToken
+      __typename
+    }
+  }
+`;
+
+export const getNextTokensForUsersByNameAndCreatedAt = /* GraphQL */ `
+  query UsersByNameAndCreatedAt(
+    $name: String
+    $createdAt: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelUsersFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    usersByNameAndCreatedAt(
+      name: $name
+      createdAt: $createdAt
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      nextToken
+      __typename
+    }
+  }
+`;
+
+export const getNextTokensForUsersByFullPhoneNumberAndCreatedAt = /* GraphQL */ `
+  query UsersByFullPhoneNumberAndCreatedAt(
+    $fullPhoneNumber: String
+    $createdAt: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelUsersFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    usersByFullPhoneNumberAndCreatedAt(
+      fullPhoneNumber: $fullPhoneNumber
+      createdAt: $createdAt
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      nextToken
+      __typename
+    }
+  }
+`;

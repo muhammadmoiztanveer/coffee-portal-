@@ -7,9 +7,11 @@ type Users @model {
   id: ID!
   email: String!
   name: String!
+    @index(name: "byName", sortKeyFields: ["createdAt"])
+    @index(name: "byNameAndPhone", sortKeyFields: ["fullPhoneNumber"])
+  fullPhoneNumber: String! @index(name: "byPhone", sortKeyFields: ["createdAt"])
   countryCode: String!
   phoneNumber: String!
-  fullPhoneNumber: String!
   paymentType: String!
   balance: Float
   purchaseCount: Int

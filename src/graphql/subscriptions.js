@@ -7,9 +7,9 @@ export const onCreateUsers = /* GraphQL */ `
       id
       email
       name
+      fullPhoneNumber
       countryCode
       phoneNumber
-      fullPhoneNumber
       paymentType
       balance
       purchaseCount
@@ -36,9 +36,9 @@ export const onUpdateUsers = /* GraphQL */ `
       id
       email
       name
+      fullPhoneNumber
       countryCode
       phoneNumber
-      fullPhoneNumber
       paymentType
       balance
       purchaseCount
@@ -65,9 +65,9 @@ export const onDeleteUsers = /* GraphQL */ `
       id
       email
       name
+      fullPhoneNumber
       countryCode
       phoneNumber
-      fullPhoneNumber
       paymentType
       balance
       purchaseCount
@@ -100,9 +100,9 @@ export const onCreateDeposits = /* GraphQL */ `
         id
         email
         name
+        fullPhoneNumber
         countryCode
         phoneNumber
-        fullPhoneNumber
         paymentType
         balance
         purchaseCount
@@ -129,9 +129,9 @@ export const onUpdateDeposits = /* GraphQL */ `
         id
         email
         name
+        fullPhoneNumber
         countryCode
         phoneNumber
-        fullPhoneNumber
         paymentType
         balance
         purchaseCount
@@ -158,9 +158,9 @@ export const onDeleteDeposits = /* GraphQL */ `
         id
         email
         name
+        fullPhoneNumber
         countryCode
         phoneNumber
-        fullPhoneNumber
         paymentType
         balance
         purchaseCount
@@ -188,9 +188,9 @@ export const onCreatePayments = /* GraphQL */ `
         id
         email
         name
+        fullPhoneNumber
         countryCode
         phoneNumber
-        fullPhoneNumber
         paymentType
         balance
         purchaseCount
@@ -218,9 +218,9 @@ export const onUpdatePayments = /* GraphQL */ `
         id
         email
         name
+        fullPhoneNumber
         countryCode
         phoneNumber
-        fullPhoneNumber
         paymentType
         balance
         purchaseCount
@@ -248,9 +248,9 @@ export const onDeletePayments = /* GraphQL */ `
         id
         email
         name
+        fullPhoneNumber
         countryCode
         phoneNumber
-        fullPhoneNumber
         paymentType
         balance
         purchaseCount
