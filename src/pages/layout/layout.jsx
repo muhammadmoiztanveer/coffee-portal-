@@ -100,7 +100,7 @@ const Layout = () => {
             <span className="text-sm font-semibold">{username}</span>
             <span className="text-sm">{userType}</span>
           </div>
-
+    
           <img src={User} alt="user" className="size-10" />
         </div>
       </div>

@@ -4,20 +4,10 @@ import Highlighter from "react-highlight-words";
 import { SearchOutlined, DeleteFilled, EditFilled } from "@ant-design/icons";
 import DeleteModal from "@/components/modals/deleteModal/deleteModal";
 import EditUserModal from "@/components/modals/editUserModal/editUserModal";
-import {
-  getNextTokenForUsers,
-  getNextTokensForUsersByFullPhoneNumberAndCreatedAt,
-  getNextTokensForUsersByNameAndCreatedAt,
-  getNextTokensForUsersByNameAndFullPhoneNumber,
-} from "../../graphql/customQueries";
+import { getNextTokenForUsers } from "@/graphql/customQueries";
 import { listUsers } from "@/graphql/queries";
 import { generateClient } from "aws-amplify/api";
 import { updateUsers, deleteUsers } from "@/graphql/mutations";
-import {
-  usersByFullPhoneNumberAndCreatedAt,
-  usersByNameAndCreatedAt,
-  usersByNameAndFullPhoneNumber,
-} from "../../graphql/queries";
 
 const userManagmentPage = () => {
   const [messageApi, contextHolder] = message.useMessage();
@@ -32,10 +22,10 @@ const userManagmentPage = () => {
   const [nextTokens, setNextTokens] = useState([]);
   const [hasMore, setHasMore] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [excessRecords, setExcessRecords] = useState({});
   const [recordToDelete, setRecordToDelete] = useState(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [userToEdit, setUserToEdit] = useState(null);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [users, setUsers] = useState([]);
   const [searchFilter, setSearchFilter] = useState([]);
   const searchInput = useRef(null);
@@ -44,8 +34,6 @@ const userManagmentPage = () => {
   const client = generateClient();
 
   useEffect(() => {
-    console.log("Effectv rendered");
-
     let totalUsers = 0;
 
     totalUsers =
@@ -58,8 +46,6 @@ const userManagmentPage = () => {
         total: totalUsers,
       },
     }));
-
-    console.log("TOTAL USERSS", totalUsers);
   }, [nextTokens]);
 
   const fetchTotalCount = async () => {
@@ -140,93 +126,45 @@ const userManagmentPage = () => {
     isFetching.current = true;
     setLoading(true);
 
-    let nameFilter = null;
-    let phoneFilter = null;
-
-    searchFilter.forEach((filter) => {
-      if (filter.columnName === "name") {
-        nameFilter = filter.search;
-      } else if (filter.columnName === "fullPhoneNumber") {
-        phoneFilter = filter.search;
-      }
-    });
-
-    console.log("total count usersss", nameFilter, phoneFilter);
-
     try {
-      let paginationToken = null;
-      setNextTokens([]);
-      do {
-        let response;
-        if (phoneFilter && !nameFilter) {
-          console.log("only phkne");
-          response = await client.graphql({
-            query: getNextTokensForUsersByFullPhoneNumberAndCreatedAt,
-            variables: {
-              limit: tableParams.pagination.pageSize,
-              fullPhoneNumber: phoneFilter,
-              sortDirection: "ASC",
-              nextToken: paginationToken,
-            },
-          });
-        } else if (nameFilter && !phoneFilter) {
-          console.log("only name");
-          response = await client.graphql({
-            query: getNextTokensForUsersByNameAndCreatedAt,
-            variables: {
-              limit: tableParams.pagination.pageSize,
-              name: "Moiz",
-              sortDirection: "ASC",
-              nextToken: paginationToken,
-            },
-          });
-        } else if (nameFilter && phoneFilter) {
-          console.log("naem and ophone number");
-          response = await client.graphql({
-            query: getNextTokensForUsersByNameAndFullPhoneNumber,
-            variables: {
-              limit: tableParams.pagination.pageSize,
-              fullPhoneNumber: phoneFilter,
-              name: nameFilter,
-              sortDirection: "ASC",
-              nextToken: paginationToken,
-            },
-          });
-        }
-        console.log(
-          "response from the total count next token fucntion LOOOP",
-          response
-        );
-        console.log("Query Variables token func:", {
-          name: nameFilter,
-          fullPhoneNumber: phoneFilter,
-          sortDirection: "ASC",
-          limit: tableParams.pagination.pageSize,
-          nextToken: paginationToken,
-        });
-        if (
-          !response?.data ||
-          !response?.data?.usersByFullPhoneNumberAndCreatedAt ||
-          !response?.data?.usersByNameAndCreatedAt ||
-          !response?.data?.usersByNameAndFullPhoneNumber
-        ) {
-          console.error("Invalid response format:", response);
-          messageApi.open({
-            type: "error",
-            content: "Error fetching users. Invalid response from the server.",
-          });
-          break;
-        }
-        paginationToken =
-          response.data.usersByFullPhoneNumberAndCreatedAt.nextToken ||
-          response.data.usersByNameAndCreatedAt.nextToken ||
-          response.data.usersByNameAndFullPhoneNumber.nextToken;
-        if (paginationToken) {
-          setNextTokens((prev) => [...prev, paginationToken]);
-        }
-      } while (paginationToken);
+      const filter =
+        searchFilter.length > 0
+          ? {
+              and: searchFilter.map((filterObj) => ({
+                [filterObj.columnName]: {
+                  contains: filterObj.search.toLowerCase(),
+                },
+              })),
+            }
+          : undefined;
+
+      setLoading(true);
+
+      const response = await client.graphql({
+        query: listUsers,
+        variables: {
+          limit: 1000,
+          nextToken: null,
+          filter: filter,
+        },
+      });
+
+      const { items } = response.data.listUsers;
+
+      const total = items.length;
+
+      setTableParams((prev) => ({
+        ...prev,
+        pagination: {
+          ...prev.pagination,
+          total: total,
+        },
+      }));
+
+      setFilteredUsers(items);
     } catch (error) {
       console.error("Error fetching users:", error);
+
       messageApi.open({
         type: "error",
         content: "Error fetching users. Please try again later.",
@@ -237,79 +175,28 @@ const userManagmentPage = () => {
     }
   };
 
-  const listSearchedUsersData = async () => {
-    let nameFilter = null;
-    let phoneFilter = null;
+  useEffect(() => {
+    if (filteredUsers.length > 0) {
+      listSearchedUsersData();
+    }
+  }, [filteredUsers]);
 
-    searchFilter.forEach((filter) => {
-      if (filter.columnName === "name") {
-        nameFilter = filter.search;
-      } else if (filter.columnName === "fullPhoneNumber") {
-        phoneFilter = filter.search;
-      }
-    });
-
-    // console.log(nameFilter, phoneFilter);
-    // console.log("list usersss", nameFilter, phoneFilter);
-
+  const listSearchedUsersData = () => {
     try {
       setLoading(true);
+
       const { current, pageSize } = tableParams.pagination;
-      const nextToken = current === 1 ? null : nextTokens[current - 1];
-      let response;
-      if (phoneFilter && !nameFilter) {
-        response = await client.graphql({
-          query: usersByFullPhoneNumberAndCreatedAt,
-          variables: {
-            limit: pageSize,
-            fullPhoneNumber: phoneFilter,
-            sortDirection: "ASC",
-            nextToken: nextToken,
-          },
-        });
-      } else if (nameFilter && !phoneFilter) {
-        response = await client.graphql({
-          query: usersByNameAndCreatedAt,
-          variables: {
-            limit: pageSize,
-            name: nameFilter,
-            sortDirection: "ASC",
-            nextToken: nextToken,
-          },
-        });
-      } else if (nameFilter && phoneFilter) {
-        response = await client.graphql({
-          query: usersByNameAndFullPhoneNumber,
-          variables: {
-            limit: pageSize,
-            name: nameFilter,
-            fullPhoneNumber: phoneFilter,
-            sortDirection: "ASC",
-            nextToken: nextToken,
-          },
-        });
-      }
-      console.log(
-        "responseeeeeeeeeeEEEEEEEEEEEEE from searched listings",
-        response
-      );
-      console.log("Query Variables list fucntion:", {
-        name: nameFilter,
-        fullPhoneNumber: phoneFilter,
-        sortDirection: "ASC",
-        limit: tableParams.pagination.pageSize,
-        nextToken: nextToken,
-      });
-      const { items } =
-        response.data.usersByFullPhoneNumberAndCreatedAt ||
-        response.data.usersByNameAndCreatedAt ||
-        response.data.usersByNameAndFullPhoneNumber;
-      setUsers(items);
+      const start = (current - 1) * pageSize;
+      const end = start + pageSize;
+
+      const usersData = filteredUsers.slice(start, end);
+
+      setUsers(usersData);
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error("Error processing data:", error);
       messageApi.open({
         type: "error",
-        content: "Error fetching users. Please try again later.",
+        content: "Error displaying data. Please try again later.",
       });
     } finally {
       setLoading(false);
@@ -464,8 +351,6 @@ const userManagmentPage = () => {
   };
 
   useEffect(() => {
-    console.log("searchFilter chnaged", searchFilter);
-
     setLoading(true);
 
     if (searchFilter.length === 0) {
@@ -480,7 +365,6 @@ const userManagmentPage = () => {
     const fetchData = async () => {
       if (searchFilter.length > 0) {
         await fetchSearchedTotalCount();
-        await listSearchedUsersData();
       } else {
         await fetchTotalCount();
         await listUsersData();
@@ -493,8 +377,6 @@ const userManagmentPage = () => {
   }, [searchFilter]);
 
   useEffect(() => {
-    console.log("pagination changed", tableParams);
-
     if (searchFilter.length > 0) {
       listSearchedUsersData();
     } else {
@@ -508,10 +390,6 @@ const userManagmentPage = () => {
       prev.filter((filter) => filter.columnName !== dataIndex)
     );
   };
-
-  useEffect(() => {
-    console.log("Search Filter", searchFilter);
-  }, [searchFilter]);
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
@@ -561,19 +439,6 @@ const userManagmentPage = () => {
           >
             Reset
           </Button>
-          {/* <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({
-                closeDropdown: false,
-              });
-              setSearchText(selectedKeys[0]);
-              setSearchedColumn(dataIndex);
-            }}
-          >
-            Filter
-          </Button> */}
           <Button
             type="link"
             size="small"
@@ -629,12 +494,12 @@ const userManagmentPage = () => {
     {
       title: "Email",
       dataIndex: "email",
-      sorter: true,
+      // sorter: true,
     },
     {
       title: "Customer Name",
       dataIndex: "name",
-      sorter: true,
+      // sorter: true,
       render: (name) => `${name.first} ${name.last}`,
       ...getColumnSearchProps("name"),
     },

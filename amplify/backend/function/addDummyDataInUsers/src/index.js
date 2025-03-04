@@ -26,6 +26,7 @@ const generateUser = () => {
     freeDrinks: faker.number.int({ min: 0, max: 10 }),
     coins: faker.number.int({ min: 0, max: 500 }),
     stamps: faker.number.int({ min: 0, max: 200 }),
+    purchaseCount: 0,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
