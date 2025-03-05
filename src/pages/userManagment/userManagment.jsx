@@ -351,6 +351,8 @@ const userManagmentPage = () => {
   };
 
   useEffect(() => {
+    console.log("searched Filterss", searchFilter);
+
     setLoading(true);
 
     if (searchFilter.length === 0) {
@@ -386,9 +388,18 @@ const userManagmentPage = () => {
 
   const handleReset = (clearFilters, dataIndex) => {
     clearFilters();
+
     setSearchFilter((prev) =>
       prev.filter((filter) => filter.columnName !== dataIndex)
     );
+
+    if (searchFilter.length > 0) {
+      setFilteredUsers([]);
+      fetchSearchedTotalCount();
+    } else {
+      fetchTotalCount();
+      listUsersData();
+    }
   };
 
   const getColumnSearchProps = (dataIndex) => ({

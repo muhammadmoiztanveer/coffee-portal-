@@ -34,6 +34,7 @@ const storeManagmentPage = () => {
 
   const [isEditDrinkModalVisible, setIsEditDrinkModalVisible] = useState(false);
   const [drinkToEdit, setDrinkToEdit] = useState(null);
+  const [filteredDrinks, setFilteredDrinks] = useState([]);
   const [drinks, setDrinks] = useState([]);
   const [searchFilter, setSearchFilter] = useState([]);
   const searchInput = useRef(null);
@@ -135,81 +136,6 @@ const storeManagmentPage = () => {
     setLoading(true);
 
     try {
-      let paginationToken = null;
-      setNextTokens([]);
-      let iterationCount = 0;
-      const MAX_ITERATIONS = 20;
-
-      do {
-        if (iterationCount >= MAX_ITERATIONS) {
-          console.error("Max iterations reached. Breaking loop.");
-          break;
-        }
-
-        const filter =
-          searchFilter.length > 0
-            ? {
-                and: searchFilter.map((filterObj) => ({
-                  [filterObj.columnName]: {
-                    contains: filterObj.search.toLowerCase(),
-                  },
-                })),
-              }
-            : undefined;
-
-        const response = await client.graphql({
-          query: getNextTokenForDrinks,
-          variables: {
-            limit: tableParams.pagination.pageSize,
-            nextToken: paginationToken,
-            filter: filter,
-          },
-        });
-
-        console.log("Fetching response:", response);
-
-        if (!response.data || !response.data.listDrinks) {
-          console.error("Invalid response format:", response);
-          messageApi.open({
-            type: "error",
-            content: "Error fetching Drinks. Invalid response from the server.",
-          });
-          break;
-        }
-
-        const { items, nextToken } = response.data.listDrinks;
-
-        if (!items || items.length === 0) {
-          console.log("No more items to fetch.");
-          break;
-        }
-
-        paginationToken = nextToken;
-        if (paginationToken) {
-          setNextTokens((prev) => [...prev, paginationToken]);
-        }
-
-        iterationCount++;
-      } while (paginationToken);
-    } catch (error) {
-      console.error("Error fetching Drinks:", error);
-      messageApi.open({
-        type: "error",
-        content: "Error fetching Drinks. Please try again later.",
-      });
-    } finally {
-      isFetching.current = false;
-      setLoading(false);
-    }
-  };
-
-  const listSearchedDrinksData = async () => {
-    setLoading(true);
-    try {
-      setLoading(true);
-      const { current, pageSize } = tableParams.pagination;
-      const nextToken = current === 1 ? null : nextTokens[current - 1];
-
       const filter =
         searchFilter.length > 0
           ? {
@@ -221,29 +147,65 @@ const storeManagmentPage = () => {
             }
           : undefined;
 
+      setLoading(true);
+
       const response = await client.graphql({
         query: listDrinks,
         variables: {
-          nextToken: nextToken,
+          limit: 1000,
+          nextToken: null,
           filter: filter,
         },
       });
 
       const { items } = response.data.listDrinks;
-      setDrinks(items);
+
+      const total = items.length;
 
       setTableParams((prev) => ({
         ...prev,
         pagination: {
           ...prev.pagination,
-          total: Drinks.length,
+          total: total,
         },
       }));
+
+      setFilteredDrinks(items);
     } catch (error) {
-      console.error("Error fetching Drinks:", error);
+      console.error("Error fetching users:", error);
+
       messageApi.open({
         type: "error",
-        content: "Error fetching Drinks. Please try again later.",
+        content: "Error fetching users. Please try again later.",
+      });
+    } finally {
+      isFetching.current = false;
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (filteredDrinks.length > 0) {
+      listSearchedDrinksData();
+    }
+  }, [filteredDrinks]);
+
+  const listSearchedDrinksData = () => {
+    try {
+      setLoading(true);
+
+      const { current, pageSize } = tableParams.pagination;
+      const start = (current - 1) * pageSize;
+      const end = start + pageSize;
+
+      const drinksData = filteredDrinks.slice(start, end);
+
+      setDrinks(drinksData);
+    } catch (error) {
+      console.error("Error processing data:", error);
+      messageApi.open({
+        type: "error",
+        content: "Error displaying data. Please try again later.",
       });
     } finally {
       setLoading(false);
@@ -420,30 +382,32 @@ const storeManagmentPage = () => {
   };
 
   useEffect(() => {
-    console.log("searchFilter chnaged", searchFilter);
-
     setLoading(true);
+
     if (searchFilter.length === 0) {
       setTableParams((prev) => ({
         ...prev,
         pagination: { ...prev.pagination, current: 1 },
       }));
-      // setNextTokens([]);
+
+      setNextTokens([]);
     }
 
-    if (searchFilter.length > 0) {
-      fetchSearchedTotalCount();
-      listSearchedDrinksData();
-    } else {
-      fetchTotalCount();
-      listDrinksData();
-    }
+    const fetchData = async () => {
+      if (searchFilter.length > 0) {
+        await fetchSearchedTotalCount();
+      } else {
+        await fetchTotalCount();
+        await listDrinksData();
+      }
+    };
+
+    fetchData();
+
     setLoading(false);
   }, [searchFilter]);
 
   useEffect(() => {
-    console.log("pagination changed", tableParams);
-
     if (searchFilter.length > 0) {
       listSearchedDrinksData();
     } else {
@@ -453,14 +417,21 @@ const storeManagmentPage = () => {
 
   const handleReset = (clearFilters, dataIndex) => {
     clearFilters();
+
+    console.log("clearrr filtersss", clearFilters);
+
     setSearchFilter((prev) =>
       prev.filter((filter) => filter.columnName !== dataIndex)
     );
-  };
 
-  useEffect(() => {
-    console.log("Search Filter", searchFilter);
-  }, [searchFilter]);
+    if (searchFilter.length > 0) {
+      setFilteredDrinks([]);
+      fetchSearchedTotalCount();
+    } else {
+      fetchTotalCount();
+      listDrinksData();
+    }
+  };
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
@@ -510,19 +481,6 @@ const storeManagmentPage = () => {
           >
             Reset
           </Button>
-          {/* <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({
-                closeDropdown: false,
-              });
-              setSearchText(selectedKeys[0]);
-              setSearchedColumn(dataIndex);
-            }}
-          >
-            Filter
-          </Button> */}
           <Button
             type="link"
             size="small"
