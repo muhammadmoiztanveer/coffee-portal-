@@ -83,6 +83,7 @@ const userManagmentPage = () => {
       } while (paginationToken);
     } catch (error) {
       console.error("Error fetching users:", error);
+
       messageApi.open({
         type: "error",
         content: "Error fetching users. Please try again later.",
@@ -127,14 +128,42 @@ const userManagmentPage = () => {
     setLoading(true);
 
     try {
+      // const filter =
+      //   searchFilter.length > 0
+      //     ? {
+      //         and: searchFilter.map((filterObj) => ({
+      //           [filterObj.columnName]: {
+      //             contains: filterObj.search.toLowerCase(),
+      //           },
+      //         })),
+      //       }
+      //     : undefined;
+
       const filter =
         searchFilter.length > 0
           ? {
-              and: searchFilter.map((filterObj) => ({
-                [filterObj.columnName]: {
-                  contains: filterObj.search.toLowerCase(),
-                },
-              })),
+              and: searchFilter.map((filterObj) => {
+                const searchString = filterObj.search;
+                return {
+                  or: [
+                    {
+                      [filterObj.columnName]: {
+                        contains: searchString,
+                      },
+                    },
+                    {
+                      [filterObj.columnName]: {
+                        startsWith: searchString,
+                      },
+                    },
+                    {
+                      [filterObj.columnName]: {
+                        endsWith: searchString,
+                      },
+                    },
+                  ],
+                };
+              }),
             }
           : undefined;
 
@@ -169,9 +198,6 @@ const userManagmentPage = () => {
         type: "error",
         content: "Error fetching users. Please try again later.",
       });
-    } finally {
-      isFetching.current = false;
-      setLoading(false);
     }
   };
 
@@ -181,7 +207,7 @@ const userManagmentPage = () => {
     }
   }, [filteredUsers]);
 
-  const listSearchedUsersData = () => {
+  const listSearchedUsersData = async () => {
     try {
       setLoading(true);
 
@@ -199,6 +225,7 @@ const userManagmentPage = () => {
         content: "Error displaying data. Please try again later.",
       });
     } finally {
+      isFetching.current = false;
       setLoading(false);
     }
   };
@@ -351,31 +378,22 @@ const userManagmentPage = () => {
   };
 
   useEffect(() => {
-    console.log("searched Filterss", searchFilter);
-
-    setLoading(true);
-
-    if (searchFilter.length === 0) {
-      setTableParams((prev) => ({
-        ...prev,
-        pagination: { ...prev.pagination, current: 1 },
-      }));
-
-      setNextTokens([]);
-    }
-
     const fetchData = async () => {
       if (searchFilter.length > 0) {
+        setFilteredUsers([]);
+        setUsers([]);
+
         await fetchSearchedTotalCount();
       } else {
+        setNextTokens([]);
+        setUsers([]);
+
         await fetchTotalCount();
         await listUsersData();
       }
     };
 
     fetchData();
-
-    setLoading(false);
   }, [searchFilter]);
 
   useEffect(() => {
@@ -386,20 +404,14 @@ const userManagmentPage = () => {
     }
   }, [tableParams.pagination.current, tableParams.pagination.pageSize]);
 
-  const handleReset = (clearFilters, dataIndex) => {
+  const handleReset = async (clearFilters, dataIndex, close) => {
     clearFilters();
 
     setSearchFilter((prev) =>
       prev.filter((filter) => filter.columnName !== dataIndex)
     );
 
-    if (searchFilter.length > 0) {
-      setFilteredUsers([]);
-      fetchSearchedTotalCount();
-    } else {
-      fetchTotalCount();
-      listUsersData();
-    }
+    close();
   };
 
   const getColumnSearchProps = (dataIndex) => ({
@@ -442,7 +454,9 @@ const userManagmentPage = () => {
             Search
           </Button>
           <Button
-            onClick={() => clearFilters && handleReset(clearFilters)}
+            onClick={() =>
+              clearFilters && handleReset(clearFilters, dataIndex, close)
+            }
             size="small"
             style={{
               width: 90,
@@ -457,7 +471,7 @@ const userManagmentPage = () => {
               close();
             }}
           >
-            close
+            Close
           </Button>
         </Space>
       </div>
@@ -469,8 +483,6 @@ const userManagmentPage = () => {
         }}
       />
     ),
-    onFilter: (value, record) =>
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
     filterDropdownProps: {
       onOpenChange(open) {
         if (open) {

@@ -172,15 +172,12 @@ const storeManagmentPage = () => {
 
       setFilteredDrinks(items);
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error("Error fetching drinks:", error);
 
       messageApi.open({
         type: "error",
         content: "Error fetching users. Please try again later.",
       });
-    } finally {
-      isFetching.current = false;
-      setLoading(false);
     }
   };
 
@@ -190,7 +187,7 @@ const storeManagmentPage = () => {
     }
   }, [filteredDrinks]);
 
-  const listSearchedDrinksData = () => {
+  const listSearchedDrinksData = async () => {
     try {
       setLoading(true);
 
@@ -203,11 +200,13 @@ const storeManagmentPage = () => {
       setDrinks(drinksData);
     } catch (error) {
       console.error("Error processing data:", error);
+
       messageApi.open({
         type: "error",
         content: "Error displaying data. Please try again later.",
       });
     } finally {
+      isFetching.current = false;
       setLoading(false);
     }
   };
@@ -382,29 +381,22 @@ const storeManagmentPage = () => {
   };
 
   useEffect(() => {
-    setLoading(true);
-
-    if (searchFilter.length === 0) {
-      setTableParams((prev) => ({
-        ...prev,
-        pagination: { ...prev.pagination, current: 1 },
-      }));
-
-      setNextTokens([]);
-    }
-
     const fetchData = async () => {
       if (searchFilter.length > 0) {
+        setFilteredDrinks([]);
+        setDrinks([]);
+
         await fetchSearchedTotalCount();
       } else {
+        setNextTokens([]);
+        setDrinks([]);
+
         await fetchTotalCount();
         await listDrinksData();
       }
     };
 
     fetchData();
-
-    setLoading(false);
   }, [searchFilter]);
 
   useEffect(() => {
@@ -415,22 +407,14 @@ const storeManagmentPage = () => {
     }
   }, [tableParams.pagination.current, tableParams.pagination.pageSize]);
 
-  const handleReset = (clearFilters, dataIndex) => {
+  const handleReset = async (clearFilters, dataIndex, close) => {
     clearFilters();
-
-    console.log("clearrr filtersss", clearFilters);
 
     setSearchFilter((prev) =>
       prev.filter((filter) => filter.columnName !== dataIndex)
     );
 
-    if (searchFilter.length > 0) {
-      setFilteredDrinks([]);
-      fetchSearchedTotalCount();
-    } else {
-      fetchTotalCount();
-      listDrinksData();
-    }
+    close();
   };
 
   const getColumnSearchProps = (dataIndex) => ({
@@ -473,7 +457,9 @@ const storeManagmentPage = () => {
             Search
           </Button>
           <Button
-            onClick={() => clearFilters && handleReset(clearFilters)}
+            onClick={() =>
+              clearFilters && handleReset(clearFilters, dataIndex, close)
+            }
             size="small"
             style={{
               width: 90,
@@ -488,7 +474,7 @@ const storeManagmentPage = () => {
               close();
             }}
           >
-            close
+            Close
           </Button>
         </Space>
       </div>
@@ -500,8 +486,6 @@ const storeManagmentPage = () => {
         }}
       />
     ),
-    onFilter: (value, record) =>
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
     filterDropdownProps: {
       onOpenChange(open) {
         if (open) {
@@ -536,7 +520,6 @@ const storeManagmentPage = () => {
     {
       title: "Drink Name",
       dataIndex: "name",
-      // sorter: true,
       render: (name) => `${name.first} ${name.last}`,
       ...getColumnSearchProps("name"),
     },
