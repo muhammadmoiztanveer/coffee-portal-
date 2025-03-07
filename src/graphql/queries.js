@@ -7,6 +7,7 @@ export const getUsers = /* GraphQL */ `
       id
       email
       name
+      nameLower
       fullPhoneNumber
       countryCode
       phoneNumber
@@ -41,6 +42,7 @@ export const listUsers = /* GraphQL */ `
         id
         email
         name
+        nameLower
         fullPhoneNumber
         countryCode
         phoneNumber
@@ -71,6 +73,7 @@ export const getDeposits = /* GraphQL */ `
         id
         email
         name
+        nameLower
         fullPhoneNumber
         countryCode
         phoneNumber
@@ -121,6 +124,7 @@ export const getPayments = /* GraphQL */ `
         id
         email
         name
+        nameLower
         fullPhoneNumber
         countryCode
         phoneNumber
@@ -212,6 +216,7 @@ export const usersByNameAndCreatedAt = /* GraphQL */ `
         id
         email
         name
+        nameLower
         fullPhoneNumber
         countryCode
         phoneNumber
@@ -251,6 +256,7 @@ export const usersByNameAndFullPhoneNumber = /* GraphQL */ `
         id
         email
         name
+        nameLower
         fullPhoneNumber
         countryCode
         phoneNumber
@@ -290,6 +296,7 @@ export const usersByFullPhoneNumberAndCreatedAt = /* GraphQL */ `
         id
         email
         name
+        nameLower
         fullPhoneNumber
         countryCode
         phoneNumber

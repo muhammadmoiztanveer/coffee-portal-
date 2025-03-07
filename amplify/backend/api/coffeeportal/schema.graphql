@@ -3,13 +3,13 @@
 input AMPLIFY {
   globalAuthRule: AuthRule = { allow: public }
 } # FOR TESTING ONLY!
-
 type Users @model {
   id: ID!
   email: String!
   name: String!
     @index(name: "byName", sortKeyFields: ["createdAt"])
     @index(name: "byNameAndPhone", sortKeyFields: ["fullPhoneNumber"])
+  nameLower: String
   fullPhoneNumber: String! @index(name: "byPhone", sortKeyFields: ["createdAt"])
   countryCode: String!
   phoneNumber: String!

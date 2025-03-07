@@ -7,6 +7,7 @@ export const onCreateUsers = /* GraphQL */ `
       id
       email
       name
+      nameLower
       fullPhoneNumber
       countryCode
       phoneNumber
@@ -36,6 +37,7 @@ export const onUpdateUsers = /* GraphQL */ `
       id
       email
       name
+      nameLower
       fullPhoneNumber
       countryCode
       phoneNumber
@@ -65,6 +67,7 @@ export const onDeleteUsers = /* GraphQL */ `
       id
       email
       name
+      nameLower
       fullPhoneNumber
       countryCode
       phoneNumber
@@ -100,6 +103,7 @@ export const onCreateDeposits = /* GraphQL */ `
         id
         email
         name
+        nameLower
         fullPhoneNumber
         countryCode
         phoneNumber
@@ -129,6 +133,7 @@ export const onUpdateDeposits = /* GraphQL */ `
         id
         email
         name
+        nameLower
         fullPhoneNumber
         countryCode
         phoneNumber
@@ -158,6 +163,7 @@ export const onDeleteDeposits = /* GraphQL */ `
         id
         email
         name
+        nameLower
         fullPhoneNumber
         countryCode
         phoneNumber
@@ -188,6 +194,7 @@ export const onCreatePayments = /* GraphQL */ `
         id
         email
         name
+        nameLower
         fullPhoneNumber
         countryCode
         phoneNumber
@@ -218,6 +225,7 @@ export const onUpdatePayments = /* GraphQL */ `
         id
         email
         name
+        nameLower
         fullPhoneNumber
         countryCode
         phoneNumber
@@ -248,6 +256,7 @@ export const onDeletePayments = /* GraphQL */ `
         id
         email
         name
+        nameLower
         fullPhoneNumber
         countryCode
         phoneNumber

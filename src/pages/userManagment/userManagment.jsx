@@ -127,42 +127,27 @@ const userManagmentPage = () => {
     isFetching.current = true;
     setLoading(true);
 
-    try {
-      // const filter =
-      //   searchFilter.length > 0
-      //     ? {
-      //         and: searchFilter.map((filterObj) => ({
-      //           [filterObj.columnName]: {
-      //             contains: filterObj.search.toLowerCase(),
-      //           },
-      //         })),
-      //       }
-      //     : undefined;
+    setFilteredUsers([]);
 
+    try {
       const filter =
         searchFilter.length > 0
           ? {
-              and: searchFilter.map((filterObj) => {
-                const searchString = filterObj.search;
-                return {
+              and: searchFilter.flatMap((filterObj) => {
+                const searchString = filterObj.search.toLowerCase();
+                const terms = searchString
+                  .split(/\s+/)
+                  .filter((term) => term.trim() !== "");
+
+                if (terms.length === 0) return [];
+
+                return terms.map((term) => ({
                   or: [
-                    {
-                      [filterObj.columnName]: {
-                        contains: searchString,
-                      },
-                    },
-                    {
-                      [filterObj.columnName]: {
-                        startsWith: searchString,
-                      },
-                    },
-                    {
-                      [filterObj.columnName]: {
-                        endsWith: searchString,
-                      },
-                    },
+                    { [filterObj.columnName]: { contains: term } },
+                    // { [filterObj.columnName]: { beginsWith: term } },
+                    // { [filterObj.columnName]: { endsWith: term } },
                   ],
-                };
+                }));
               }),
             }
           : undefined;
@@ -179,7 +164,6 @@ const userManagmentPage = () => {
       });
 
       const { items } = response.data.listUsers;
-
       const total = items.length;
 
       setTableParams((prev) => ({
@@ -191,6 +175,7 @@ const userManagmentPage = () => {
       }));
 
       setFilteredUsers(items);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching users:", error);
 
@@ -208,6 +193,8 @@ const userManagmentPage = () => {
   }, [filteredUsers]);
 
   const listSearchedUsersData = async () => {
+    setUsers([]);
+
     try {
       setLoading(true);
 
@@ -220,6 +207,7 @@ const userManagmentPage = () => {
       setUsers(usersData);
     } catch (error) {
       console.error("Error processing data:", error);
+
       messageApi.open({
         type: "error",
         content: "Error displaying data. Please try again later.",
@@ -254,6 +242,7 @@ const userManagmentPage = () => {
         id: values.id,
         email: values.email,
         name: values.name,
+        nameLower: values.name.toLowerCase(),
         phoneNumber: values.phoneNumber,
         stamps: values.stamps,
         freeDrinks: values.freeDrinks,
@@ -523,8 +512,8 @@ const userManagmentPage = () => {
       title: "Customer Name",
       dataIndex: "name",
       // sorter: true,
-      render: (name) => `${name.first} ${name.last}`,
-      ...getColumnSearchProps("name"),
+      // render: (name) => `${name.first} ${name.last}`,
+      ...getColumnSearchProps("nameLower"),
     },
     {
       title: "Phone Number",
