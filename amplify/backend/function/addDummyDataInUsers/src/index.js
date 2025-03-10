@@ -13,7 +13,7 @@ const generateUser = () => {
     id: faker.string.uuid(),
     email: faker.internet.email(),
     name: faker.person.fullName(),
-    nameLower: faker.person.fullName().toLowerCase(),
+    nameLower: faker.person.fullName().toLowerCase().replace(/\s/g, ''),
     paymentType: faker.helpers.arrayElement([
       "Credit Card",
       "Debit Card",

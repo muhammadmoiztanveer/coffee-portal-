@@ -21,11 +21,11 @@
       "function": {
         "saveRegisteredUser": {
           "deploymentBucketName": "amplify-coffeeportal-dev-cb3f4-deployment",
-          "s3Key": "amplify-builds/saveRegisteredUser-334f6d79597a34773176-build.zip"
+          "s3Key": "amplify-builds/saveRegisteredUser-62597367356231553578-build.zip"
         },
         "addDummyDataInUsers": {
           "deploymentBucketName": "amplify-coffeeportal-dev-cb3f4-deployment",
-          "s3Key": "amplify-builds/addDummyDataInUsers-316e33616d703343384c-build.zip"
+          "s3Key": "amplify-builds/addDummyDataInUsers-304f7177524d466e5749-build.zip"
         }
       }
     }

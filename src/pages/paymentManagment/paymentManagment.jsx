@@ -400,6 +400,9 @@ const paymentManagmentPage = () => {
 
       listUsersData();
 
+      console.log("valuesss", values);
+      console.log("deposit id", values.deposits.items[0].id);
+
       const updateDespositHistory = {
         id: values.deposits.items[0].id,
         userID: values.id,

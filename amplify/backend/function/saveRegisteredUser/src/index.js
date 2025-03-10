@@ -7,7 +7,7 @@ export const handler = async (event) => {
     const userId = event.request.userAttributes.sub;
     const email = event.request.userAttributes.email;
     const name = event.request.userAttributes.name;
-    const nameLower = event.request.userAttributes.name.toLowerCase();
+    const nameLower = event.request.userAttributes.name.toLowerCase().replace(/\s/g, '');
     const phoneNumber = event.request.userAttributes["custom:phoneNumber"];
     const countryCode = event.request.userAttributes["custom:countryCode"];
     const fullPhoneNumber = event.request.userAttributes.phone_number;

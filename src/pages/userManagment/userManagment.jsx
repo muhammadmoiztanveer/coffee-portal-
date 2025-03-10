@@ -130,27 +130,59 @@ const userManagmentPage = () => {
     setFilteredUsers([]);
 
     try {
+      
+      // const filter =
+      //   searchFilter.length > 0
+      //     ? {
+      //         and: searchFilter.flatMap((filterObj) => {
+      //           const searchString = filterObj.search
+      //             .toLowerCase()
+      //             .replace(/\s/g, "");
+
+      //           const terms = searchString
+      //             .split(/\s*/)
+      //             .filter((term) => term.length > 0);
+
+      //           if (terms.length === 0) return [];
+
+      //           return terms.map((term) => ({
+      //             or: [
+      //               { [filterObj.columnName]: { contains: term } },
+      //               { [filterObj.columnName]: { beginsWith: term } },
+      //               { [filterObj.columnName]: { endsWith: term } },
+      //             ],
+      //           }));
+      //         }),
+      //       }
+      //     : undefined;
+
       const filter =
         searchFilter.length > 0
           ? {
-              and: searchFilter.flatMap((filterObj) => {
-                const searchString = filterObj.search.toLowerCase();
-                const terms = searchString
-                  .split(/\s+/)
-                  .filter((term) => term.trim() !== "");
+              and: searchFilter
+                .flatMap((filterObj) => {
+                  const searchString = filterObj.search.toLowerCase();
+                  const terms = searchString
+                    .split(/\s+/)
+                    .filter((term) => term.trim() !== "");
 
-                if (terms.length === 0) return [];
+                  if (terms.length === 0) return [];
 
-                return terms.map((term) => ({
-                  or: [
-                    { [filterObj.columnName]: { contains: term } },
-                    // { [filterObj.columnName]: { beginsWith: term } },
-                    // { [filterObj.columnName]: { endsWith: term } },
-                  ],
-                }));
-              }),
+                  return {
+                    or: [
+                      { [filterObj.columnName]: { contains: searchString } },
+                      { [filterObj.columnName]: { beginsWith: searchString } },
+                      { [filterObj.columnName]: { endsWith: searchString } },
+                    ],
+                  };
+                })
+                .filter(Boolean),
             }
           : undefined;
+
+      if (filter?.and?.some((arr) => arr.length === 0)) {
+        throw new Error("Invalid filter conditions");
+      }
 
       setLoading(true);
 

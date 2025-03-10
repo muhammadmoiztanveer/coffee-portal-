@@ -34,6 +34,7 @@ const ProductSelect = ({ value, onChange }) => {
     const selectedProduct = products.find(
       (product) => product.id === productId
     );
+    
     if (selectedProduct) {
       onChange(selectedProduct.price.toString());
     } else {

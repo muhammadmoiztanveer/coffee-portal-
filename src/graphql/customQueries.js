@@ -75,6 +75,7 @@ export const GetUserWithLastDeposit = /* GraphQL */ `
           id
           amount
           createdAt
+          updatedAt
         }
       }
     }
@@ -109,7 +110,7 @@ export const GetUserWithAllPayments = /* GraphQL */ `
   }
 `;
 
-export const GetUserWithLastPayment = /* GraphQL */ `
+export const GetUserWithLastPayment = `
   query GetUserWithLastPayment($userId: ID!) {
     getUsers(id: $userId) {
       id
