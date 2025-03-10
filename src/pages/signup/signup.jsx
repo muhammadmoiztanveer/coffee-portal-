@@ -275,7 +275,7 @@ const SignUpPage = () => {
             Already have an account?{" "}
             <Link
               to="/login"
-              className="text-blue-500 underline hover:text-blue-950"
+              className="text-black underline hover:text-black"
             >
               Login
             </Link>

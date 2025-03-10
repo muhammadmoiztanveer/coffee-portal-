@@ -5,6 +5,7 @@ import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 import { Input, Button } from "antd";
 import { useNavigate, Link } from "react-router-dom";
 import { signIn } from "aws-amplify/auth";
+import { getCurrentUser } from "aws-amplify/auth";
 
 // Validation schema using Yup
 const LoginSchema = Yup.object().shape({
@@ -134,12 +135,22 @@ const LoginPage = () => {
               )}
 
               {/* Link for existing users */}
-              <div className="mt-4 text-center">
+              <div className="mt-4 text-end">
+                  <Link
+                    to="/forgot-password"
+                    className="text-black underline hover:text-black"
+                  >
+                    Forgot Password ?
+                  </Link>
+              </div>
+
+              {/* Link for existing users */}
+              <div className="mt-6 text-center">
                 <p className="text-gray-600">
                   Don't have an account ?{" "}
                   <Link
                     to="/signup"
-                    className="text-blue-500 underline hover:text-blue-950"
+                    className="text-black underline hover:text-black"
                   >
                     SignUp
                   </Link>

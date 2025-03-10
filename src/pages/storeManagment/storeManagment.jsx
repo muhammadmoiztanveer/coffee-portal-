@@ -248,7 +248,8 @@ const storeManagmentPage = () => {
         content: "There was an error adding the drink. Please try again.",
       });
     } finally {
-      setSubmitting(false); // End submitting state
+      setSubmitting(false);
+      setIsAddNewDrinkModalVisible(false);
     }
   };
 
@@ -278,6 +279,7 @@ const storeManagmentPage = () => {
       });
     } finally {
       setSubmitting(false); // End submitting state
+      setIsEditDrinkModalVisible(false);
     }
   };
 

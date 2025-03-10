@@ -1,19 +1,363 @@
-import React, { useRef, useState } from "react";
+// import React, { useRef, useState, useEffect } from "react";
+// import { Formik, Field, Form, ErrorMessage } from "formik";
+// import * as Yup from "yup";
+// import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
+// import { Input, Button, Result, message } from "antd";
+// import { resetPassword, confirmResetPassword } from "aws-amplify/auth";
+
+// const EmailSchema = Yup.object().shape({
+//   email: Yup.string()
+//     .email("Invalid email format")
+//     .required("Email is required"),
+// });
+
+// const PasswordSchema = Yup.object().shape({
+//   newPassword: Yup.string()
+//     .min(8, "Password must be at least 8 characters")
+//     .required("New Password is required"),
+//   confirmPassword: Yup.string()
+//     .oneOf([Yup.ref("newPassword"), null], "Passwords must match")
+//     .required("Confirm Password is required"),
+// });
+
+// const resend_otp_timeout = 30;
+
+// const ForgotPasswordPage = () => {
+//   const inputRefs = useRef([]);
+//   const [currentStep, setCurrentStep] = useState("EMAIL");
+//   const [otp, setOtp] = useState(Array(6).fill(""));
+//   const [email, setEmail] = useState("");
+//   const [resendTimeLeft, setResendTimeLeft] = useState(0);
+//   const [isSubmitting, setIsSubmitting] = useState(false);
+//   const [verificationCode, setVerificationCode] = useState("");
+
+//   // Resend timer handler
+//   useEffect(() => {
+//     let timer;
+//     if (resendTimeLeft > 0) {
+//       timer = setInterval(() => {
+//         setResendTimeLeft((prev) => prev - 1);
+//       }, 1000);
+//     }
+//     return () => clearInterval(timer);
+//   }, [resendTimeLeft]);
+
+//   const handleSendOtp = async (email) => {
+//     try {
+//       setIsSubmitting(true);
+//       await resetPassword({ username: email });
+//       message.success("Verification code sent to your email");
+//       setCurrentStep("OTP");
+//       setResendTimeLeft(resend_otp_timeout);
+//     } catch (error) {
+//       message.error(error.message || "Failed to send verification code");
+//     } finally {
+//       setIsSubmitting(false);
+//     }
+//   };
+
+//   const handleResendOtp = async () => {
+//     try {
+//       setIsSubmitting(true);
+//       await resetPassword({ username: email });
+//       message.success("New verification code sent");
+//       setResendTimeLeft(resend_otp_timeout);
+//     } catch (error) {
+//       message.error(error.message || "Failed to resend code");
+//     } finally {
+//       setIsSubmitting(false);
+//     }
+//   };
+
+//   const handleVerifyOtp = async () => {
+//     try {
+//       setIsSubmitting(true);
+//       const code = otp.join("");
+//       // Temporary verification (Amplify will actually verify when submitting password)
+//       setVerificationCode(code);
+//       setCurrentStep("PASSWORD");
+//     } catch (error) {
+//       message.error("Invalid verification code");
+//     } finally {
+//       setIsSubmitting(false);
+//     }
+//   };
+
+//   const handlePasswordReset = async (values) => {
+//     try {
+//       setIsSubmitting(true);
+//       await confirmResetPassword({
+//         username: email,
+//         confirmationCode: verificationCode,
+//         newPassword: values.newPassword,
+//       });
+//       message.success("Password reset successfully!");
+//       setCurrentStep("SUCCESS");
+//     } catch (error) {
+//       message.error(error.message || "Password reset failed");
+//     } finally {
+//       setIsSubmitting(false);
+//     }
+//   };
+
+//   // OTP input handlers
+//   const handleOtpChange = (e, index) => {
+//     const value = e.target.value;
+//     if (/^\d?$/.test(value)) {
+//       const newOtp = [...otp];
+//       newOtp[index] = value;
+//       setOtp(newOtp);
+
+//       if (value && index < 5) {
+//         inputRefs.current[index + 1]?.focus();
+//       }
+//     }
+//   };
+
+//   const handleKeyDown = (e, index) => {
+//     if (e.key === "Backspace" && !otp[index] && index > 0) {
+//       inputRefs.current[index - 1]?.focus();
+//     }
+//   };
+
+//   const handlePaste = (e) => {
+//     const pasteData = e.clipboardData.getData("text");
+//     if (/^\d{6}$/.test(pasteData)) {
+//       const newOtp = pasteData.split("").slice(0, 6);
+//       setOtp(newOtp);
+//       newOtp.forEach((digit, index) => {
+//         if (inputRefs.current[index]) {
+//           inputRefs.current[index].value = digit;
+//         }
+//       });
+//       inputRefs.current[5]?.focus();
+//     }
+//     e.preventDefault();
+//   };
+
+//   return (
+//     <div className="flex justify-center items-center h-screen bg-slate-100">
+//       <div className="w-full max-w-md p-8 bg-white rounded-lg">
+//         {currentStep === "SUCCESS" ? (
+//           <Result
+//             status="success"
+//             title="Password Reset Successful!"
+//             subTitle="You can now login with your new password"
+//             extra={[
+//               <Button
+//                 color="default"
+//                 variant="solid"
+//                 key="login"
+//                 href="/login"
+//                 className="bg-blue-600 hover:bg-blue-700"
+//               >
+//                 Go to Login
+//               </Button>,
+//             ]}
+//           />
+//         ) : (
+//           <>
+//             <h2 className="text-2xl font-semibold mb-2 text-center">
+//               Forgot Password
+//             </h2>
+//             <p className="text-gray-500 text-center mb-6">
+//               {currentStep === "EMAIL"
+//                 ? "Enter your email to reset your password"
+//                 : currentStep === "OTP"
+//                 ? "Enter the verification code sent to your email"
+//                 : "Enter your new password"}
+//             </p>
+
+//             {currentStep === "EMAIL" && (
+//               <Formik
+//                 initialValues={{ email: "" }}
+//                 validationSchema={EmailSchema}
+//                 onSubmit={({ email }) => {
+//                   setEmail(email);
+//                   handleSendOtp(email);
+//                 }}
+//               >
+//                 {({ isValid }) => (
+//                   <Form>
+//                     <div className="mb-4">
+//                       <Field name="email">
+//                         {({ field }) => (
+//                           <Input
+//                             {...field}
+//                             placeholder="Enter your email"
+//                             size="large"
+//                             className="w-full"
+//                           />
+//                         )}
+//                       </Field>
+//                       <ErrorMessage
+//                         name="email"
+//                         component="div"
+//                         className="text-red-500 text-sm mt-1"
+//                       />
+//                     </div>
+
+//                     <Button
+//                       color="default"
+//                       variant="solid"
+//                       htmlType="submit"
+//                       block
+//                       size="large"
+//                       loading={isSubmitting}
+//                       disabled={!isValid || isSubmitting}
+//                       className="bg-blue-600 hover:bg-blue-700 h-12"
+//                     >
+//                       Continue
+//                     </Button>
+//                   </Form>
+//                 )}
+//               </Formik>
+//             )}
+
+//             {currentStep === "OTP" && (
+//               <div className="space-y-6">
+//                 <div className="flex justify-center gap-2">
+//                   {otp.map((digit, index) => (
+//                     <input
+//                       key={index}
+//                       ref={(el) => (inputRefs.current[index] = el)}
+//                       type="text"
+//                       maxLength="1"
+//                       value={digit}
+//                       onChange={(e) => handleOtpChange(e, index)}
+//                       onKeyDown={(e) => handleKeyDown(e, index)}
+//                       onPaste={handlePaste}
+//                       className="w-12 h-12 text-center text-xl border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+//                     />
+//                   ))}
+//                 </div>
+
+//                 <div className="text-center">
+//                   <Button
+//                     type="link"
+//                     onClick={handleResendOtp}
+//                     disabled={resendTimeLeft > 0 || isSubmitting}
+//                     className="text-blue-600"
+//                   >
+//                     {resendTimeLeft > 0
+//                       ? `Resend code in ${resendTimeLeft}s`
+//                       : "Resend verification code"}
+//                   </Button>
+//                 </div>
+
+//                 <Button
+//                   color="default"
+//                   variant="solid"
+//                   block
+//                   size="large"
+//                   onClick={handleVerifyOtp}
+//                   loading={isSubmitting}
+//                   disabled={otp.join("").length !== 6 || isSubmitting}
+//                   className="bg-blue-600 hover:bg-blue-700 h-12"
+//                 >
+//                   Verify Code
+//                 </Button>
+//               </div>
+//             )}
+
+//             {currentStep === "PASSWORD" && (
+//               <Formik
+//                 initialValues={{ newPassword: "", confirmPassword: "" }}
+//                 validationSchema={PasswordSchema}
+//                 onSubmit={handlePasswordReset}
+//               >
+//                 {({ isValid }) => (
+//                   <Form className="space-y-4">
+//                     <div className="mb-4">
+//                       <Field name="newPassword">
+//                         {({ field }) => (
+//                           <Input.Password
+//                             {...field}
+//                             placeholder="New password"
+//                             iconRender={(visible) =>
+//                               visible ? (
+//                                 <EyeOutlined />
+//                               ) : (
+//                                 <EyeInvisibleOutlined />
+//                               )
+//                             }
+//                             size="large"
+//                             className="w-full"
+//                           />
+//                         )}
+//                       </Field>
+//                       <ErrorMessage
+//                         name="newPassword"
+//                         component="div"
+//                         className="text-red-500 text-sm mt-1"
+//                       />
+//                     </div>
+
+//                     <div className="mb-6">
+//                       <Field name="confirmPassword">
+//                         {({ field }) => (
+//                           <Input.Password
+//                             {...field}
+//                             placeholder="Confirm new password"
+//                             iconRender={(visible) =>
+//                               visible ? (
+//                                 <EyeOutlined />
+//                               ) : (
+//                                 <EyeInvisibleOutlined />
+//                               )
+//                             }
+//                             size="large"
+//                             className="w-full"
+//                           />
+//                         )}
+//                       </Field>
+//                       <ErrorMessage
+//                         name="confirmPassword"
+//                         component="div"
+//                         className="text-red-500 text-sm mt-1"
+//                       />
+//                     </div>
+
+//                     <Button
+//                       color="default"
+//                       variant="solid"
+//                       htmlType="submit"
+//                       block
+//                       size="large"
+//                       loading={isSubmitting}
+//                       disabled={!isValid || isSubmitting}
+//                       className="bg-blue-600 hover:bg-blue-700 h-12"
+//                     >
+//                       Reset Password
+//                     </Button>
+//                   </Form>
+//                 )}
+//               </Formik>
+//             )}
+//           </>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default ForgotPasswordPage;
+
+import React, { useRef, useState, useEffect } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
-import { Input, Button, Result } from "antd";
-// import {resetPassword, confirmResetPassword} from 'aws-amplify/auth';
+import { Input, Button, Result, message } from "antd";
+import { resetPassword, confirmResetPassword } from "aws-amplify/auth";
+import { Link } from "react-router-dom";
 
-// Email Validation Schema
 const EmailSchema = Yup.object().shape({
   email: Yup.string()
     .email("Invalid email format")
     .required("Email is required"),
 });
 
-// Password Reset Validation Schema
-const ForgotPasswordSchema = Yup.object().shape({
+const PasswordSchema = Yup.object().shape({
   newPassword: Yup.string()
     .min(8, "Password must be at least 8 characters")
     .required("New Password is required"),
@@ -22,16 +366,122 @@ const ForgotPasswordSchema = Yup.object().shape({
     .required("Confirm Password is required"),
 });
 
+const resend_otp_timeout = 30;
+
 const ForgotPasswordPage = () => {
   const inputRefs = useRef([]);
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [currentStep, setCurrentStep] = useState("EMAIL");
+  const [otp, setOtp] = useState(Array(6).fill(""));
   const [email, setEmail] = useState("");
-  const [resetStep, setResetStep] = useState(null);
-  const [otpStatus, setOtpStatus] = useState(null);
-  const [passwordResetStatus, setPasswordResetStatus] = useState(null);
+  const [resendTimeLeft, setResendTimeLeft] = useState(0);
+  const [isResending, setIsResending] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [messageApi, contextHolder] = message.useMessage();
+
+  useEffect(() => {
+    let timer;
+    if (resendTimeLeft > 0) {
+      timer = setInterval(() => {
+        setResendTimeLeft((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendTimeLeft]);
+
+  const handleSendOtp = async (email) => {
+    try {
+      setIsResending(true);
+      await resetPassword({ username: email });
+      messageApi.open({
+        type: "success",
+        content: "Verification code sent to your email",
+      });
+
+      setCurrentStep("OTP");
+      setResendTimeLeft(resend_otp_timeout);
+    } catch (error) {
+      messageApi.open({
+        type: "error",
+        content: `${error}` || "Failed to send verification code",
+      });
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    try {
+      setIsResending(true);
+      await resetPassword({ username: email });
+
+      messageApi.open({
+        type: "success",
+        content: "New verification code sent",
+      });
+
+      setResendTimeLeft(resend_otp_timeout);
+    } catch (error) {
+      messageApi.open({
+        type: "error",
+        content: `${error}` || "Failed to resend code",
+      });
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    try {
+      setIsVerifying(true);
+      const code = otp.join("");
+
+      await confirmResetPassword({
+        username: email,
+        confirmationCode: code,
+        newPassword: "TempPassword123!",
+      });
+
+      setVerificationCode(code);
+      setCurrentStep("PASSWORD");
+      messageApi.open({
+        type: "success",
+        content: "Verification successful",
+      });
+    } catch (error) {
+      messageApi.open({
+        type: "error",
+        content: `${error}` || "Invalid verification code",
+      });
+      setOtp(Array(6).fill(""));
+      inputRefs.current[0]?.focus();
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handlePasswordReset = async (values) => {
+    try {
+      setIsVerifying(true);
+      await confirmResetPassword({
+        username: email,
+        confirmationCode: verificationCode,
+        newPassword: values.newPassword,
+      });
+      messageApi.open({
+        type: "success",
+        content: "Password reset successfully!",
+      });
+      setCurrentStep("SUCCESS");
+    } catch (error) {
+      messageApi.open({
+        type: "error",
+        content: `${error}` || "Password reset failed",
+      });
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   const handleOtpChange = (e, index) => {
     const value = e.target.value;
@@ -47,278 +497,244 @@ const ForgotPasswordPage = () => {
   };
 
   const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace") {
-      if (otp[index] === "") {
-        if (index > 0) {
-          inputRefs.current[index - 1]?.focus();
-        }
-      } else {
-        const newOtp = [...otp];
-        newOtp[index] = "";
-        setOtp(newOtp);
-      }
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
     }
   };
 
-  // Handle paste event to allow pasting a full OTP
   const handlePaste = (e) => {
     const pasteData = e.clipboardData.getData("text");
     if (/^\d{6}$/.test(pasteData)) {
-      const newOtp = pasteData.split("");
+      const newOtp = pasteData.split("").slice(0, 6);
       setOtp(newOtp);
       newOtp.forEach((digit, index) => {
-        inputRefs.current[index].value = digit;
+        if (inputRefs.current[index]) {
+          inputRefs.current[index].value = digit;
+        }
       });
-      inputRefs.current[5]?.focus(); // Move focus to the last box
+      inputRefs.current[5]?.focus();
     }
-    e.preventDefault(); // Prevent default paste behavior
-  };
-
-  // Handle Send OTP Button Click
-  const handleSendOtp = async (email) => {
-    try {
-      // const output = await resetPassword({username: email});
-      // handleResetPasswordNextSteps(output);
-    } catch (error) {
-      setOtpStatus("error");
-      console.log(error);
-    }
-  };
-
-  // Handle password reset next steps
-  const handleResetPasswordNextSteps = (output) => {
-    // const {nextStep} = output;
-    // switch (nextStep.resetPasswordStep) {
-    //   case 'CONFIRM_RESET_PASSWORD_WITH_CODE':
-    //     const codeDeliveryDetails = nextStep.codeDeliveryDetails;
-    //     console.log(`Confirmation code was sent to ${codeDeliveryDetails.deliveryMedium}`);
-    //     setIsOtpSent(true); // Show OTP input after sending the OTP
-    //     setOtpStatus('success');
-    //     setResetStep('CONFIRM_RESET_PASSWORD_WITH_CODE');
-    //     break;
-    //   case 'DONE':
-    //     console.log('Successfully reset password.');
-    //     setPasswordResetStatus('success');
-    //     break;
-    //   default:
-    //     setOtpStatus('error');
-    //     console.log('An unknown error occurred. Please try again later.');
-    // }
-  };
-
-  // Handle final password reset and confirm OTP
-  const handlePasswordReset = async (values) => {
-    // try {
-    //   const {newPassword} = values;
-    //   await confirmResetPassword({
-    //     username: email,
-    //     confirmationCode: otp.join(''),
-    //     newPassword
-    //   });
-    //   console.log('Password reset successful');
-    //   setPasswordResetStatus('success');
-    // } catch (error) {
-    //   setPasswordResetStatus('error');
-    //   console.log(error);
-    // }
+    e.preventDefault();
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-slate-100">
-      <div className="w-full max-w-md p-8 bg-white rounded-lg">
-        <h2 className="text-2xl font-semibold mb-2 text-center">
-          Forgot your password?
-        </h2>
-        <div className="text-center mb-6">
-          <p className="text-gray-500">Don't worry we got you covered</p>
-        </div>
+    <>
+      {contextHolder}
 
-        {/* Display Success or Error Result for OTP */}
-        {otpStatus === "success" && !passwordResetStatus && (
-          <Result
-            status="success"
-            title="OTP sent successfully!"
-            subTitle={`Please check your email ${email}  and enter the OTP to reset your password.`}
-            extra={[]}
-          />
-        )}
-
-        {/* Display Success or Error Result for Password Reset */}
-        {passwordResetStatus === "success" && (
-          <Result
-            status="success"
-            title="Password changed successfully!"
-            subTitle="Your password has been successfully updated. You can now log in with your new password."
-            extra={[
-              <Button
-                type="primary"
-                key="console"
-                href="/login"
-                className="bg-amber-950 text-white hover:bg-amber-700"
-              >
-                Go to Login
-              </Button>,
-            ]}
-          />
-        )}
-
-        {/* Email Field and Send OTP Button */}
-        {!isOtpSent && otpStatus !== "success" && (
-          <Formik
-            initialValues={{ email }}
-            validationSchema={EmailSchema}
-            onSubmit={(values) => {
-              setEmail(values.email); // Store email when valid
-              handleSendOtp(values.email); // Trigger OTP screen after email is valid
-            }}
-          >
-            {({ isValid, handleChange, handleBlur, values }) => (
-              <Form>
-                <div className="mb-4">
-                  <Field
-                    name="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    className="w-full mt-6 p-2 border border-gray-300 rounded-[8px]"
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    value={values.email}
-                  />
-                  <ErrorMessage
-                    name="email"
-                    component="div"
-                    className="text-red-500 text-sm"
-                  />
-                </div>
-
+      <div className="flex justify-center items-center h-screen bg-slate-100">
+        <div className="w-full max-w-md p-8 bg-white rounded-lg">
+          {currentStep === "SUCCESS" ? (
+            <Result
+              status="success"
+              title="Password Reset Successful!"
+              subTitle="You can now login with your new password"
+              extra={[
                 <Button
-                  size="large"
                   color="default"
                   variant="solid"
-                  htmlType="submit"
-                  block
-                  disabled={!isValid}
+                  key="login"
+                  href="/login"
+                  className="bg-blue-600 hover:bg-blue-700"
                 >
-                  Request for OTP
-                </Button>
-              </Form>
-            )}
-          </Formik>
-        )}
+                  Go to Login
+                </Button>,
+              ]}
+            />
+          ) : (
+            <>
+              <h2 className="text-2xl font-semibold mb-2 text-center">
+                Forgot Password
+              </h2>
+              <p className="text-gray-500 text-center mb-6">
+                {currentStep === "EMAIL"
+                  ? "Enter your email to reset your password"
+                  : currentStep === "OTP"
+                  ? "Enter the verification code sent to your email"
+                  : "Enter your new password"}
+              </p>
 
-        {isOtpSent && resetStep === "CONFIRM_RESET_PASSWORD_WITH_CODE" && (
-          <div className="flex justify-center gap-2 mt-4">
-            {otp.map((digit, index) => (
-              <input
-                key={index}
-                type="text"
-                maxLength="1"
-                className="w-12 h-12 text-center text-xl border border-[#600912] rounded-md focus:outline-none focus:ring-2 focus:ring-[#600912]"
-                ref={(el) => (inputRefs.current[index] = el)}
-                value={otp[index]}
-                onChange={(e) => handleOtpChange(e, index)}
-                onKeyDown={(e) => handleKeyDown(e, index)}
-                onPaste={handlePaste}
-              />
-            ))}
-          </div>
-        )}
+              {currentStep === "EMAIL" && (
+                <Formik
+                  initialValues={{ email: "" }}
+                  validationSchema={EmailSchema}
+                  onSubmit={({ email }) => {
+                    setEmail(email);
+                    handleSendOtp(email);
+                  }}
+                >
+                  {({ isValid, handleChange, handleBlur, values }) => (
+                    <Form>
+                      <div className="mb-4">
+                        <Field
+                          name="email"
+                          type="email"
+                          placeholder="Enter your email"
+                          className="w-full p-3 border border-gray-300 rounded-lg"
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          value={values.email}
+                        />
+                        <ErrorMessage
+                          name="email"
+                          component="div"
+                          className="text-red-500 text-sm mt-1"
+                        />
+                      </div>
 
-        {/* Password Reset Form */}
-        {isOtpSent &&
-          resetStep === "CONFIRM_RESET_PASSWORD_WITH_CODE" &&
-          otpStatus !== "error" && (
-            <Formik
-              initialValues={{
-                newPassword: "",
-                confirmPassword: "",
-              }}
-              validationSchema={ForgotPasswordSchema}
-              onSubmit={(values) => handlePasswordReset(values)}
-            >
-              {() => (
-                <Form className="space-y-4 mt-4">
-                  {/* New Password */}
-                  <div className="relative">
-                    <Field name="newPassword">
-                      {({ field }) => (
-                        <div className="relative">
-                          <Input
-                            {...field}
-                            type={showPassword ? "text" : "password"}
-                            className="w-full p-2 border border-gray-300 rounded"
-                            placeholder="New Password"
-                          />
-                          <div
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1 cursor-pointer"
-                          >
-                            {showPassword ? (
-                              <EyeOutlined />
-                            ) : (
-                              <EyeInvisibleOutlined />
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </Field>
-                    <ErrorMessage
-                      name="newPassword"
-                      component="div"
-                      className="text-red-500 text-sm"
-                    />
+                      <Button
+                        color="default"
+                        variant="solid"
+                        htmlType="submit"
+                        block
+                        size="large"
+                        loading={isResending}
+                        disabled={!isValid || isResending}
+                        className="bg-blue-600 hover:bg-blue-700 h-12 rounded-lg"
+                      >
+                        {isResending ? "Sending..." : "Continue"}
+                      </Button>
+
+                      <div className="mt-6 text-end">
+                        <Link
+                          to="/login"
+                          className="text-black underline hover:text-black"
+                        >
+                          Go Back to Login ?
+                        </Link>
+                      </div>
+                    </Form>
+                  )}
+                </Formik>
+              )}
+
+              {currentStep === "OTP" && (
+                <div className="space-y-6">
+                  <div className="flex justify-center gap-2">
+                    {otp.map((digit, index) => (
+                      <input
+                        key={index}
+                        ref={(el) => (inputRefs.current[index] = el)}
+                        type="text"
+                        maxLength="1"
+                        value={digit}
+                        onChange={(e) => handleOtpChange(e, index)}
+                        onKeyDown={(e) => handleKeyDown(e, index)}
+                        onPaste={handlePaste}
+                        className="w-12 h-12 text-center text-xl border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                      />
+                    ))}
                   </div>
 
-                  {/* Confirm Password */}
-                  <div className="relative">
-                    <Field name="confirmPassword">
-                      {({ field }) => (
-                        <div className="relative">
-                          <Input
-                            {...field}
-                            type={showConfirmPassword ? "text" : "password"}
-                            className="w-full p-2 border border-gray-300 rounded"
-                            placeholder="Confirm Password"
-                          />
-                          <div
-                            onClick={() =>
-                              setShowConfirmPassword(!showConfirmPassword)
-                            }
-                            className="absolute right-3 top-1 cursor-pointer"
-                          >
-                            {showConfirmPassword ? (
-                              <EyeOutlined />
-                            ) : (
-                              <EyeInvisibleOutlined />
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </Field>
-                    <ErrorMessage
-                      name="confirmPassword"
-                      component="div"
-                      className="text-red-500 text-sm"
-                    />
+                  <div className="text-center">
+                    <Button
+                      type="link"
+                      onClick={handleResendOtp}
+                      loading={isResending}
+                      disabled={resendTimeLeft > 0 || isResending}
+                      className="text-blue-600"
+                    >
+                      {isResending
+                        ? "Resending..."
+                        : resendTimeLeft > 0
+                        ? `Resend code in ${resendTimeLeft}s`
+                        : "Resend verification code"}
+                    </Button>
                   </div>
 
                   <Button
-                    size="large"
                     color="default"
                     variant="solid"
-                    htmlType="submit"
                     block
-                    loading={isSubmitting}
-                    disabled={isSubmitting}
+                    size="large"
+                    onClick={handleVerifyOtp}
+                    loading={isVerifying}
+                    disabled={otp.join("").length !== 6 || isVerifying}
+                    className="bg-blue-600 hover:bg-blue-700 h-12 rounded-lg"
                   >
-                    {isSubmitting ? "Reseting..." : "Reset Password"}
+                    {isVerifying ? "Verifying..." : "Verify Code"}
                   </Button>
-                </Form>
+                </div>
               )}
-            </Formik>
+
+              {currentStep === "PASSWORD" && (
+                <Formik
+                  initialValues={{ newPassword: "", confirmPassword: "" }}
+                  validationSchema={PasswordSchema}
+                  onSubmit={handlePasswordReset}
+                >
+                  {({ isValid }) => (
+                    <Form className="space-y-4">
+                      <div className="mb-4">
+                        <Field name="newPassword">
+                          {({ field }) => (
+                            <Input.Password
+                              {...field}
+                              placeholder="New password"
+                              iconRender={(visible) =>
+                                visible ? (
+                                  <EyeOutlined />
+                                ) : (
+                                  <EyeInvisibleOutlined />
+                                )
+                              }
+                              size="large"
+                              className="w-full p-3 border-gray-300 rounded-lg"
+                            />
+                          )}
+                        </Field>
+                        <ErrorMessage
+                          name="newPassword"
+                          component="div"
+                          className="text-red-500 text-sm mt-1"
+                        />
+                      </div>
+
+                      <div className="mb-6">
+                        <Field name="confirmPassword">
+                          {({ field }) => (
+                            <Input.Password
+                              {...field}
+                              placeholder="Confirm new password"
+                              iconRender={(visible) =>
+                                visible ? (
+                                  <EyeOutlined />
+                                ) : (
+                                  <EyeInvisibleOutlined />
+                                )
+                              }
+                              size="large"
+                              className="w-full p-3 border-gray-300 rounded-lg"
+                            />
+                          )}
+                        </Field>
+                        <ErrorMessage
+                          name="confirmPassword"
+                          component="div"
+                          className="text-red-500 text-sm mt-1"
+                        />
+                      </div>
+
+                      <Button
+                        color="default"
+                        variant="solid"
+                        htmlType="submit"
+                        block
+                        size="large"
+                        loading={isVerifying}
+                        disabled={!isValid || isVerifying}
+                        className="bg-blue-600 hover:bg-blue-700 h-12 rounded-lg"
+                      >
+                        {isVerifying ? "Updating..." : "Reset Password"}
+                      </Button>
+                    </Form>
+                  )}
+                </Formik>
+              )}
+            </>
           )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

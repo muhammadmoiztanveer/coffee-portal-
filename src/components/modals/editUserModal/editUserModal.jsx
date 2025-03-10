@@ -12,12 +12,8 @@ const EditUserModal = ({
   initialValues,
   onSubmit,
 }) => {
-  const [phoneNumber, setPhoneNumber] = useState(
-    initialValues?.phoneNumber || ""
-  );
-  const [selectedCountryCode, setSelectedCountryCode] = useState(
-    initialValues?.countryCode || ""
-  );
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [selectedCountryCode, setSelectedCountryCode] = useState("");
   const [phoneNumberWithoutCountryCode, setPhoneNumberWithoutCountryCode] =
     useState("");
 
@@ -26,7 +22,9 @@ const EditUserModal = ({
       .email("Invalid email format")
       .required("Email is required"),
     name: Yup.string().required("Customer Name is required"),
-    phone: Yup.string().required("Phone number is required"),
+    phone: Yup.string()
+      .required("Phone number is required")
+      .min(8, "Phone number too short"),
     balance: Yup.number()
       .typeError("Deposit Balance must be a number")
       .required("Deposit Balance is required"),
@@ -44,7 +42,11 @@ const EditUserModal = ({
     initialValues: {
       email: initialValues?.email || "",
       name: initialValues?.name || "",
-      phone: initialValues?.phoneNumber || "",
+      countryCode: initialValues?.countryCode || "",
+      phoneNumber: initialValues?.phoneNumber || "",
+      phone: initialValues?.fullPhoneNumber
+        ? initialValues.fullPhoneNumber.replace(/\D/g, "")
+        : "",
       freeDrinks: initialValues?.freeDrinks || 0,
       balance: initialValues?.balance || 0,
       coins: initialValues?.coins || 0,
@@ -53,13 +55,12 @@ const EditUserModal = ({
     validationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        const combinedPhoneNumber = `+${phoneNumber.replace(/\D/g, "")}`;
         await onSubmit(
           {
             ...values,
-            phoneNumber: combinedPhoneNumber,
+            phoneNumber: `+${values.phone}`,
             countryCode: selectedCountryCode,
-            phoneNumberWithoutCountryCode: phoneNumberWithoutCountryCode,
+            phoneNumberWithoutCountryCode,
           },
           setSubmitting
         );
@@ -72,6 +73,26 @@ const EditUserModal = ({
       }
     },
   });
+
+  useEffect(() => {
+    if (initialValues) {
+      const fullPhone = initialValues.fullPhoneNumber || "";
+      setPhoneNumber(fullPhone);
+
+      // Parse country code and phone number
+      if (fullPhone) {
+        const dialCodeMatch = fullPhone.match(/^\+\d+/);
+        if (dialCodeMatch) {
+          const dialCode = dialCodeMatch[0].slice(1);
+          const numberWithoutCode = fullPhone
+            .slice(dialCodeMatch[0].length)
+            .replace(/\D/g, "");
+          setSelectedCountryCode(`+${dialCode}`);
+          setPhoneNumberWithoutCountryCode(numberWithoutCode);
+        }
+      }
+    }
+  }, [initialValues]);
 
   return (
     <Modal
@@ -86,7 +107,8 @@ const EditUserModal = ({
           </Button>
           <Button
             key="submit"
-            type="primary"
+            color="default"
+            variant="solid"
             onClick={formik.handleSubmit}
             loading={formik.isSubmitting}
             disabled={formik.isSubmitting}
@@ -138,7 +160,6 @@ const EditUserModal = ({
           help={formik.errors.phone}
         >
           <PhoneInput
-            country={"us"}
             value={phoneNumber}
             onChange={(phone, data) => {
               const rawPhone = phone.replace(/\D/g, "");
@@ -169,6 +190,7 @@ const EditUserModal = ({
           />
         </Form.Item>
 
+        {/* Other form fields remain the same */}
         {/* Deposit Balance Field */}
         <Form.Item
           label="Deposit Balance"
@@ -183,6 +205,7 @@ const EditUserModal = ({
             value={formik.values.balance}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
+            disabled
           />
         </Form.Item>
 
@@ -200,6 +223,7 @@ const EditUserModal = ({
             value={formik.values.coins}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
+            disabled
           />
         </Form.Item>
 
@@ -217,6 +241,7 @@ const EditUserModal = ({
             value={formik.values.stamps}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
+            disabled
           />
         </Form.Item>
 
@@ -233,6 +258,7 @@ const EditUserModal = ({
             value={formik.values.freeDrinks}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
+            disabled
           />
         </Form.Item>
       </Form>

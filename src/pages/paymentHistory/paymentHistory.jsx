@@ -14,6 +14,7 @@ import {
   GetUserWithAllPayments,
 } from "../../graphql/customQueries";
 import moment from "moment";
+import Highlighter from "react-highlight-words";
 
 const paymentHistoryPage = () => {
   const [data, setData] = useState();
@@ -30,6 +31,7 @@ const paymentHistoryPage = () => {
   const [nextTokens, setNextTokens] = useState([]);
   const [hasMore, setHasMore] = useState(true);
   const [excessRecords, setExcessRecords] = useState({});
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [users, setUsers] = useState([]);
   const [searchFilter, setSearchFilter] = useState([]);
   const searchInput = useRef(null);
@@ -155,6 +157,102 @@ const paymentHistoryPage = () => {
     }
   };
 
+  const fetchSearchedTotalCount = async () => {
+    if (isFetching.current) return;
+    isFetching.current = true;
+    setLoading(true);
+
+    setFilteredUsers([]);
+
+    try {
+      const filter =
+        searchFilter.length > 0
+          ? {
+              and: searchFilter.flatMap((filterObj) => {
+                const searchString = filterObj.search.toLowerCase();
+                const terms = searchString
+                  .split(/\s+/)
+                  .filter((term) => term.trim() !== "");
+
+                if (terms.length === 0) return [];
+
+                return terms.map((term) => ({
+                  or: [
+                    { [filterObj.columnName]: { contains: term } },
+                    // { [filterObj.columnName]: { beginsWith: term } },
+                    // { [filterObj.columnName]: { endsWith: term } },
+                  ],
+                }));
+              }),
+            }
+          : undefined;
+
+      setLoading(true);
+
+      const response = await client.graphql({
+        query: listUsers,
+        variables: {
+          limit: 1000,
+          nextToken: null,
+          filter: filter,
+        },
+      });
+
+      const { items } = response.data.listUsers;
+      const total = items.length;
+
+      setTableParams((prev) => ({
+        ...prev,
+        pagination: {
+          ...prev.pagination,
+          total: total,
+        },
+      }));
+
+      setFilteredUsers(items);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+
+      messageApi.open({
+        type: "error",
+        content: "Error fetching users. Please try again later.",
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (filteredUsers.length > 0) {
+      listSearchedUsersData();
+    }
+  }, [filteredUsers]);
+
+  const listSearchedUsersData = async () => {
+    setUsers([]);
+
+    try {
+      setLoading(true);
+
+      const { current, pageSize } = tableParams.pagination;
+      const start = (current - 1) * pageSize;
+      const end = start + pageSize;
+
+      const usersData = filteredUsers.slice(start, end);
+
+      setUsers(usersData);
+    } catch (error) {
+      console.error("Error processing data:", error);
+
+      messageApi.open({
+        type: "error",
+        content: "Error displaying data. Please try again later.",
+      });
+    } finally {
+      isFetching.current = false;
+      setLoading(false);
+    }
+  };
+
   const fetchTotalHistoryCount = async (userID, table) => {
     if (isFetching.current) return;
     isFetching.current = true;
@@ -255,9 +353,8 @@ const paymentHistoryPage = () => {
       setLoading(false);
     }
   };
-  useEffect(() => {
-    console.log("pagination changed", tableParams);
 
+  useEffect(() => {
     if (searchFilter.length > 0) {
       listSearchedUsersData();
     } else {
@@ -270,121 +367,191 @@ const paymentHistoryPage = () => {
     listUsersData();
   }, []);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      if (searchFilter.length > 0) {
+        setFilteredUsers([]);
+        setUsers([]);
+
+        await fetchSearchedTotalCount();
+      } else {
+        setNextTokens([]);
+        setUsers([]);
+
+        await fetchTotalCount();
+        await listUsersData();
+      }
+    };
+
+    fetchData();
+  }, [searchFilter]);
+
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
+
+    setSearchFilter((prev) => {
+      const updatedFilters = [...prev];
+
+      const searchValue = selectedKeys?.[0]?.trim();
+
+      if (!searchValue) {
+        const existingFilterIndex = updatedFilters.findIndex(
+          (filter) => filter.columnName === dataIndex
+        );
+
+        if (existingFilterIndex !== -1) {
+          updatedFilters.splice(existingFilterIndex, 1);
+        }
+
+        return updatedFilters;
+      }
+
+      const existingFilterIndex = updatedFilters.findIndex(
+        (filter) => filter.columnName === dataIndex
+      );
+
+      if (existingFilterIndex !== -1) {
+        updatedFilters[existingFilterIndex] = {
+          columnName: dataIndex,
+          search: searchValue,
+        };
+      } else {
+        updatedFilters.push({ columnName: dataIndex, search: searchValue });
+      }
+
+      return updatedFilters;
+    });
   };
 
-  const handleReset = (clearFilters) => {
+  const handleReset = async (
+    clearFilters,
+    dataIndex,
+    close,
+    setLocalSelectedKeys
+  ) => {
     clearFilters();
-    setSearchText("");
+
+    setSearchFilter((prev) =>
+      prev.filter((filter) => filter.columnName !== dataIndex)
+    );
+
+    setLocalSelectedKeys([]);
+
+    close();
   };
 
-  const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-      close,
-    }) => (
-      <div
-        style={{
-          padding: 8,
-        }}
-        onKeyDown={(e) => e.stopPropagation()}
-      >
-        <Input
-          ref={searchInput}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={(e) =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+  const getColumnSearchProps = (dataIndex) => {
+    const [localSelectedKeys, setLocalSelectedKeys] = useState([]);
+
+    return {
+      filterDropdown: ({
+        setSelectedKeys,
+        selectedKeys,
+        confirm,
+        clearFilters,
+        close,
+      }) => (
+        <div
           style={{
-            marginBottom: 8,
-            display: "block",
+            padding: 8,
+          }}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
+          <Input
+            ref={searchInput}
+            placeholder={`Search ${dataIndex}`}
+            value={localSelectedKeys[0] || ""} // Use local state
+            onChange={(e) => {
+              setLocalSelectedKeys(e.target.value ? [e.target.value] : []);
+            }}
+            onPressEnter={() =>
+              handleSearch(localSelectedKeys, confirm, dataIndex)
+            } // Use local state
+            style={{
+              marginBottom: 8,
+              display: "block",
+            }}
+          />
+          <Space>
+            <Button
+              type="primary"
+              onClick={() =>
+                handleSearch(localSelectedKeys, confirm, dataIndex)
+              } // Use local state
+              icon={<SearchOutlined />}
+              size="small"
+              style={{
+                width: 90,
+              }}
+            >
+              Search
+            </Button>
+            <Button
+              onClick={
+                () =>
+                  clearFilters &&
+                  handleReset(
+                    clearFilters,
+                    dataIndex,
+                    close,
+                    setLocalSelectedKeys
+                  ) // Pass local setter
+              }
+              size="small"
+              style={{
+                width: 90,
+              }}
+            >
+              Reset
+            </Button>
+            <Button
+              type="link"
+              size="small"
+              onClick={() => {
+                close();
+              }}
+            >
+              Close
+            </Button>
+          </Space>
+        </div>
+      ),
+      filterIcon: (filtered) => (
+        <SearchOutlined
+          style={{
+            color: filtered ? "#1677ff" : undefined,
           }}
         />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{
-              width: 90,
-            }}
-          >
-            Search
-          </Button>
-          <Button
-            onClick={() => clearFilters && handleReset(clearFilters)}
-            size="small"
-            style={{
-              width: 90,
-            }}
-          >
-            Reset
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({
-                closeDropdown: false,
-              });
-              setSearchText(selectedKeys[0]);
-              setSearchedColumn(dataIndex);
-            }}
-          >
-            Filter
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              close();
-            }}
-          >
-            close
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: (filtered) => (
-      <SearchOutlined
-        style={{
-          color: filtered ? "#1677ff" : undefined,
-        }}
-      />
-    ),
-    onFilter: (value, record) =>
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    filterDropdownProps: {
-      onOpenChange(open) {
-        if (open) {
-          setTimeout(() => searchInput.current?.select(), 100);
+      ),
+      filterDropdownProps: {
+        onOpenChange(open) {
+          if (open) {
+            setTimeout(() => searchInput.current?.select(), 100);
+          }
+        },
+      },
+      render: (text, record, index) => {
+        // Include record and index if needed
+        const relevantFilter = searchFilter.find(
+          (filter) => filter.columnName === dataIndex
+        );
+
+        if (relevantFilter && relevantFilter.search) {
+          // Check if a filter exists for this column *and* has a search term
+          return (
+            <Highlighter
+              highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
+              searchWords={[relevantFilter.search]} // Use the search term from the filter
+              autoEscape
+              textToHighlight={text ? text.toString() : ""}
+            />
+          );
+        } else {
+          return text; // Return original text if no filter or no search term
         }
       },
-    },
-    render: (text) =>
-      searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{
-            backgroundColor: "#ffc069",
-            padding: 0,
-          }}
-          searchWords={[searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ""}
-        />
-      ) : (
-        text
-      ),
-  });
+    };
+  };
 
   const showDepositHistory = (user) => {
     setUserToEdit(user);
@@ -410,14 +577,14 @@ const paymentHistoryPage = () => {
     {
       title: "Email",
       dataIndex: "email",
-      sorter: true,
+      // sorter: true,
     },
     {
       title: "Customer Name",
       dataIndex: "name",
-      sorter: true,
+      // sorter: true,
       render: (name) => `${name.first} ${name.last}`,
-      ...getColumnSearchProps("name"),
+      ...getColumnSearchProps("nameLower"),
     },
     {
       title: "Phone Number",

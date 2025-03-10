@@ -138,7 +138,7 @@ const registrationOTPPage = () => {
           <div className="mt-2 text-center">
             <Link
               to="/signup"
-              className="text-blue-500 underline hover:text-blue-950"
+              className="text-black underline hover:text-black"
             >
               Go Back to SignUp ?
             </Link>
