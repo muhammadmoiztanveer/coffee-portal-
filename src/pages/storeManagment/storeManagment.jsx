@@ -131,8 +131,6 @@ const storeManagmentPage = () => {
   };
 
   const fetchSearchedTotalCount = async () => {
-    if (isFetching.current) return;
-    isFetching.current = true;
     setLoading(true);
 
     try {
@@ -140,9 +138,18 @@ const storeManagmentPage = () => {
         searchFilter.length > 0
           ? {
               and: searchFilter.map((filterObj) => ({
-                [filterObj.columnName]: {
-                  contains: filterObj.search.toLowerCase(),
-                },
+                or: [
+                  {
+                    [filterObj.columnName]: {
+                      contains: filterObj.search.toLowerCase(),
+                    },
+                  },
+                  {
+                    [filterObj.columnName]: {
+                      beginsWith: filterObj.search.toLowerCase(),
+                    },
+                  },
+                ],
               })),
             }
           : undefined;

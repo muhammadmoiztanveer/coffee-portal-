@@ -153,8 +153,6 @@ const paymentManagmentPage = () => {
   };
 
   const fetchSearchedTotalCount = async () => {
-    if (isFetching.current) return;
-    isFetching.current = true;
     setLoading(true);
 
     setFilteredUsers([]);
@@ -163,22 +161,20 @@ const paymentManagmentPage = () => {
       const filter =
         searchFilter.length > 0
           ? {
-              and: searchFilter.flatMap((filterObj) => {
-                const searchString = filterObj.search.toLowerCase();
-                const terms = searchString
-                  .split(/\s+/)
-                  .filter((term) => term.trim() !== "");
-
-                if (terms.length === 0) return [];
-
-                return terms.map((term) => ({
-                  or: [
-                    { [filterObj.columnName]: { contains: term } },
-                    // { [filterObj.columnName]: { beginsWith: term } },
-                    // { [filterObj.columnName]: { endsWith: term } },
-                  ],
-                }));
-              }),
+              and: searchFilter.map((filterObj) => ({
+                or: [
+                  {
+                    [filterObj.columnName]: {
+                      contains: filterObj.search.toLowerCase(),
+                    },
+                  },
+                  {
+                    [filterObj.columnName]: {
+                      beginsWith: filterObj.search.toLowerCase(),
+                    },
+                  },
+                ],
+              })),
             }
           : undefined;
 

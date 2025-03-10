@@ -158,36 +158,29 @@ const paymentHistoryPage = () => {
   };
 
   const fetchSearchedTotalCount = async () => {
-    if (isFetching.current) return;
-    isFetching.current = true;
     setLoading(true);
-
     setFilteredUsers([]);
 
     try {
       const filter =
         searchFilter.length > 0
           ? {
-              and: searchFilter.flatMap((filterObj) => {
-                const searchString = filterObj.search.toLowerCase();
-                const terms = searchString
-                  .split(/\s+/)
-                  .filter((term) => term.trim() !== "");
-
-                if (terms.length === 0) return [];
-
-                return terms.map((term) => ({
-                  or: [
-                    { [filterObj.columnName]: { contains: term } },
-                    // { [filterObj.columnName]: { beginsWith: term } },
-                    // { [filterObj.columnName]: { endsWith: term } },
-                  ],
-                }));
-              }),
+              and: searchFilter.map((filterObj) => ({
+                or: [
+                  {
+                    [filterObj.columnName]: {
+                      contains: filterObj.search.toLowerCase(),
+                    },
+                  },
+                  {
+                    [filterObj.columnName]: {
+                      beginsWith: filterObj.search.toLowerCase(),
+                    },
+                  },
+                ],
+              })),
             }
           : undefined;
-
-      setLoading(true);
 
       const response = await client.graphql({
         query: listUsers,
@@ -203,21 +196,18 @@ const paymentHistoryPage = () => {
 
       setTableParams((prev) => ({
         ...prev,
-        pagination: {
-          ...prev.pagination,
-          total: total,
-        },
+        pagination: { ...prev.pagination, total },
       }));
 
       setFilteredUsers(items);
-      setLoading(false);
     } catch (error) {
       console.error("Error fetching users:", error);
-
       messageApi.open({
         type: "error",
         content: "Error fetching users. Please try again later.",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -248,7 +238,6 @@ const paymentHistoryPage = () => {
         content: "Error displaying data. Please try again later.",
       });
     } finally {
-      isFetching.current = false;
       setLoading(false);
     }
   };

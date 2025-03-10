@@ -45,8 +45,9 @@ const EditDepositModal = ({ isVisible, onCancel, initialValues, onSubmit }) => {
           deposits: {
             items: [
               {
-                ...initialValues.deposits.items[0],
+                id: initialValues.deposits.items[0].id,
                 amount: parseFloat(values.depositAmount),
+                createdAt: initialValues.deposits.items[0].id,
                 updatedAt: new Date().toISOString(),
               },
             ],

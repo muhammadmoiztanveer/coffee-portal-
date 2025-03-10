@@ -12,15 +12,14 @@ import { updateUsers, deleteUsers } from "@/graphql/mutations";
 const userManagmentPage = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [loading, setLoading] = useState(false);
-  const [isContentLoading, setIsContentLoading] = useState(false);
   const [tableParams, setTableParams] = useState({
     pagination: {
       current: 1,
       pageSize: 10,
     },
   });
+
   const [nextTokens, setNextTokens] = useState([]);
-  const [hasMore, setHasMore] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -34,18 +33,20 @@ const userManagmentPage = () => {
   const client = generateClient();
 
   useEffect(() => {
-    let totalUsers = 0;
+    if (nextTokens.length > 0) {
+      let totalUsers = 0;
 
-    totalUsers =
-      parseInt(nextTokens.length) * parseInt(tableParams.pagination.pageSize);
+      totalUsers =
+        parseInt(nextTokens.length) * parseInt(tableParams.pagination.pageSize);
 
-    setTableParams((prev) => ({
-      ...prev,
-      pagination: {
-        ...prev.pagination,
-        total: totalUsers,
-      },
-    }));
+      setTableParams((prev) => ({
+        ...prev,
+        pagination: {
+          ...prev.pagination,
+          total: totalUsers,
+        },
+      }));
+    }
   }, [nextTokens]);
 
   const fetchTotalCount = async () => {
@@ -68,6 +69,7 @@ const userManagmentPage = () => {
 
         if (!response.data || !response.data.listUsers) {
           console.error("Invalid response format:", response);
+
           messageApi.open({
             type: "error",
             content: "Error fetching users. Invalid response from the server.",
@@ -90,6 +92,7 @@ const userManagmentPage = () => {
       });
     } finally {
       isFetching.current = false;
+
       setLoading(false);
       // setIsContentLoading(false);
     }
@@ -113,6 +116,7 @@ const userManagmentPage = () => {
       setUsers(items);
     } catch (error) {
       console.error("Error fetching users:", error);
+
       messageApi.open({
         type: "error",
         content: "Error fetching users. Please try again later.",
@@ -123,68 +127,29 @@ const userManagmentPage = () => {
   };
 
   const fetchSearchedTotalCount = async () => {
-    if (isFetching.current) return;
-    isFetching.current = true;
     setLoading(true);
-
     setFilteredUsers([]);
 
     try {
-      
-      // const filter =
-      //   searchFilter.length > 0
-      //     ? {
-      //         and: searchFilter.flatMap((filterObj) => {
-      //           const searchString = filterObj.search
-      //             .toLowerCase()
-      //             .replace(/\s/g, "");
-
-      //           const terms = searchString
-      //             .split(/\s*/)
-      //             .filter((term) => term.length > 0);
-
-      //           if (terms.length === 0) return [];
-
-      //           return terms.map((term) => ({
-      //             or: [
-      //               { [filterObj.columnName]: { contains: term } },
-      //               { [filterObj.columnName]: { beginsWith: term } },
-      //               { [filterObj.columnName]: { endsWith: term } },
-      //             ],
-      //           }));
-      //         }),
-      //       }
-      //     : undefined;
-
       const filter =
         searchFilter.length > 0
           ? {
-              and: searchFilter
-                .flatMap((filterObj) => {
-                  const searchString = filterObj.search.toLowerCase();
-                  const terms = searchString
-                    .split(/\s+/)
-                    .filter((term) => term.trim() !== "");
-
-                  if (terms.length === 0) return [];
-
-                  return {
-                    or: [
-                      { [filterObj.columnName]: { contains: searchString } },
-                      { [filterObj.columnName]: { beginsWith: searchString } },
-                      { [filterObj.columnName]: { endsWith: searchString } },
-                    ],
-                  };
-                })
-                .filter(Boolean),
+              and: searchFilter.map((filterObj) => ({
+                or: [
+                  {
+                    [filterObj.columnName]: {
+                      contains: filterObj.search.toLowerCase(),
+                    },
+                  },
+                  {
+                    [filterObj.columnName]: {
+                      beginsWith: filterObj.search.toLowerCase(),
+                    },
+                  },
+                ],
+              })),
             }
           : undefined;
-
-      if (filter?.and?.some((arr) => arr.length === 0)) {
-        throw new Error("Invalid filter conditions");
-      }
-
-      setLoading(true);
 
       const response = await client.graphql({
         query: listUsers,
@@ -200,14 +165,10 @@ const userManagmentPage = () => {
 
       setTableParams((prev) => ({
         ...prev,
-        pagination: {
-          ...prev.pagination,
-          total: total,
-        },
+        pagination: { ...prev.pagination, total },
       }));
 
       setFilteredUsers(items);
-      setLoading(false);
     } catch (error) {
       console.error("Error fetching users:", error);
 
@@ -215,6 +176,8 @@ const userManagmentPage = () => {
         type: "error",
         content: "Error fetching users. Please try again later.",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -245,7 +208,6 @@ const userManagmentPage = () => {
         content: "Error displaying data. Please try again later.",
       });
     } finally {
-      isFetching.current = false;
       setLoading(false);
     }
   };
@@ -345,6 +307,7 @@ const userManagmentPage = () => {
       setRecordToDelete(null);
     } catch (err) {
       console.error("User Delete error :", err);
+
       messageApi.open({
         type: "error",
         content: `Error Deleting record !`,
@@ -625,7 +588,6 @@ const userManagmentPage = () => {
 
     if (pagination.pageSize !== tableParams.pagination.pageSize) {
       // setNextTokens([]);
-      setHasMore(true);
       setTableParams({
         pagination: {
           ...pagination,

@@ -5,7 +5,7 @@ import {
   HistoryOutlined,
   AppstoreAddOutlined,
 } from "@ant-design/icons";
-import { Outlet, Link, useNavigate } from "react-router-dom";
+import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { Spin, Button } from "antd";
 import Coffee from "@/assets/ice-coffee.png";
 import User from "@/assets/user.png";
@@ -22,6 +22,7 @@ const Layout = () => {
   const [isSignOutModalVisible, setIsSignOutModalVisible] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   async function currentAuthenticatedUser() {
     try {
@@ -50,6 +51,10 @@ const Layout = () => {
   useEffect(() => {
     currentAuthenticatedUser();
     navigate("/store");
+
+    if (location.pathname === "/store") {
+      setActiveMenuId(1);
+    }
   }, []);
 
   const menuItems = [
@@ -100,7 +105,7 @@ const Layout = () => {
             <span className="text-sm font-semibold">{username}</span>
             <span className="text-sm">{userType}</span>
           </div>
-    
+
           <img src={User} alt="user" className="size-10" />
         </div>
       </div>
