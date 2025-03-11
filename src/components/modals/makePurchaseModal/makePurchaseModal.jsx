@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Input } from "antd";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import ProductSelect from "@/ui/productsSelect/productsSelect";
+import ProductSelect from "@/components/ui/productsSelect/productsSelect";
 
 const MakePurchaseModal = ({
   isVisible,

@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Modal, Button, Form, Input, Select } from "antd";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import ProductSelect from "@/ui/productsSelect/productsSelect";
+import ProductSelect from "@/components/ui/productsSelect/productsSelect";
 
 const AddDepositModal = ({ isVisible, onCancel, initialValues, onSubmit }) => {
   const [selectedProductPrice, setSelectedProductPrice] = useState(null);
