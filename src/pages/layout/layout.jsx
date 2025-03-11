@@ -7,14 +7,14 @@ import {
 } from "@ant-design/icons";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { Spin, Button } from "antd";
-import Coffee from "@/assets/ice-coffee.png";
+import Logo from "@/assets/logo.png";
 import User from "@/assets/user.png";
 import { fetchAuthSession } from "aws-amplify/auth";
 import SignOutModal from "../../components/modals/signOutModal/signOutModal";
 import "@/main.css";
 
 const Layout = () => {
-  const [appName, setAppName] = useState("Caffeine Patch");
+  const [appName, setAppName] = useState("Stamps & Deposits");
   const [loading, setLoading] = useState(true);
   const [activeMenuId, setActiveMenuId] = useState(1);
   const [username, setUsername] = useState("");
@@ -51,11 +51,13 @@ const Layout = () => {
   useEffect(() => {
     currentAuthenticatedUser();
     navigate("/store");
+  }, []);
 
+  useEffect(() => {
     if (location.pathname === "/store") {
       setActiveMenuId(1);
     }
-  }, []);
+  }, [location]);
 
   const menuItems = [
     {
@@ -78,7 +80,7 @@ const Layout = () => {
     },
     {
       id: 4,
-      name: "Payment History",
+      name: "Payments History",
       icon: HistoryOutlined,
       route: "history",
     },
@@ -94,9 +96,9 @@ const Layout = () => {
 
   return (
     <div className="h-screen">
-      <div className="w-full px-4 py-4 bg-white border-0 border-b border-slate-200 text-black flex justify-between items-center">
+      <div className="w-full px-8 py-4 bg-white border-0 border-b border-slate-200 text-black flex justify-between items-center">
         <div className="flex justify-center gap-3 items-center">
-          <img src={Coffee} alt="Coffee" className="size-10" />
+          <img src={Logo} alt="Logo" className="size-10" />
           <span className="font-bold text-2xl text-black">{appName}</span>
         </div>
 

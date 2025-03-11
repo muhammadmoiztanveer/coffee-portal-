@@ -118,10 +118,10 @@ const EditDepositModal = ({ isVisible, onCancel, initialValues, onSubmit }) => {
     <div className="border flex items-center justify-center rounded-lg text-3xl font-bold p-6 bg-white text-black">
       <span className={difference !== 0 ? "text-xl transition-all" : ""}>
         {formik.values.depositAmount === "" || difference === 0 ? (
-          `$${originalBalance.toFixed(2)}`
+          `PKR ${originalBalance.toFixed(2)}`
         ) : (
           <>
-            ${originalBalance.toFixed(2)}
+            PKR {originalBalance.toFixed(2)}
             <span
               className={`mx-2 text-2xl ${
                 difference > 0 ? "text-green-500" : "text-red-500"
@@ -129,7 +129,8 @@ const EditDepositModal = ({ isVisible, onCancel, initialValues, onSubmit }) => {
             >
               {difference > 0 ? "↑" : "↓"}
             </span>
-            <br />${adjustedBalance.toFixed(2)}
+            <br />
+            PKR {adjustedBalance.toFixed(2)}
           </>
         )}
       </span>

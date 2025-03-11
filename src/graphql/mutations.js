@@ -309,6 +309,7 @@ export const createDrinks = /* GraphQL */ `
     createDrinks(input: $input, condition: $condition) {
       id
       name
+      nameLower
       price
       createdAt
       updatedAt
@@ -324,6 +325,7 @@ export const updateDrinks = /* GraphQL */ `
     updateDrinks(input: $input, condition: $condition) {
       id
       name
+      nameLower
       price
       createdAt
       updatedAt
@@ -339,6 +341,7 @@ export const deleteDrinks = /* GraphQL */ `
     deleteDrinks(input: $input, condition: $condition) {
       id
       name
+      nameLower
       price
       createdAt
       updatedAt

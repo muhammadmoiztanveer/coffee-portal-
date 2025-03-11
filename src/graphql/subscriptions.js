@@ -279,6 +279,7 @@ export const onCreateDrinks = /* GraphQL */ `
     onCreateDrinks(filter: $filter) {
       id
       name
+      nameLower
       price
       createdAt
       updatedAt
@@ -291,6 +292,7 @@ export const onUpdateDrinks = /* GraphQL */ `
     onUpdateDrinks(filter: $filter) {
       id
       name
+      nameLower
       price
       createdAt
       updatedAt
@@ -303,6 +305,7 @@ export const onDeleteDrinks = /* GraphQL */ `
     onDeleteDrinks(filter: $filter) {
       id
       name
+      nameLower
       price
       createdAt
       updatedAt

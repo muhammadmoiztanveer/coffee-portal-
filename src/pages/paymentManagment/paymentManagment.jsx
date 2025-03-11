@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Table, Input, Space, Button, Tabs, theme, message } from "antd";
+import { Table, Input, Space, Button, Tabs, theme, message, Spin } from "antd";
 import {
   SearchOutlined,
   DeleteFilled,
@@ -620,45 +620,46 @@ const paymentManagmentPage = () => {
     {
       title: "Email",
       dataIndex: "email",
-      // sorter: true,
       render: (email) => email || "N/A",
     },
     {
       title: "Customer Name",
       dataIndex: "name",
-      // sorter: true,
       render: (name) => {
-        if (name && name.first && name.last) {
-          return `${name.first} ${name.last}`;
-        } else {
-          return "N/A";
-        }
+        name || "N/A";
       },
       ...getColumnSearchProps("nameLower"),
     },
     {
       title: "Total Balance",
       dataIndex: "balance",
-      render: (balance) => (balance !== "" ? balance : "N/A"),
+      render: (balance) =>
+        balance !== null && balance !== undefined ? balance.toFixed(2) : "N/A",
     },
     {
       title: "Stamps",
       dataIndex: "stamps",
-      render: (stamps) => (stamps !== "" ? stamps : "N/A"),
+      render: (stamps) =>
+        stamps !== null && stamps !== undefined ? stamps : "N/A",
     },
     {
       title: "Actions",
       render: (_, record) => (
         <div className="flex space-x-2">
           {/* Edit Icon */}
-          <button
-            className="text-base cursor-pointer border rounded-lg py-1 px-2"
-            onClick={() => showEditDepositModal(record.id)}
-          >
-            <EditFilled />
-          </button>
 
-          {/* Delete Icon */}
+          {record.balance !== 0 &&
+          record.balance !== null &&
+          record.balance !== undefined ? (
+            <button
+              className="block text-base cursor-pointer border rounded-lg py-1 px-2"
+              onClick={() => showEditDepositModal(record.id)}
+            >
+              <EditFilled />
+            </button>
+          ) : null}
+
+          {/* Add Deposit Icon */}
           <button
             className="text-base text-green-600 cursor-pointer border rounded-lg py-1 px-2"
             onClick={() => showAddDepositModal(record)}
@@ -674,31 +675,27 @@ const paymentManagmentPage = () => {
     {
       title: "Email",
       dataIndex: "email",
-      // sorter: true,
       render: (email) => email || "N/A",
     },
     {
       title: "Customer Name",
       dataIndex: "name",
-      // sorter: true,
       render: (name) => {
-        if (name && name.first && name.last) {
-          return `${name.first} ${name.last}`;
-        } else {
-          return "N/A";
-        }
+        name || "N/A";
       },
       ...getColumnSearchProps("nameLower"),
     },
     {
       title: "Total Balance",
       dataIndex: "balance",
-      render: (balance) => (balance !== "" ? balance : "N/A"),
+      render: (balance) =>
+        balance !== null && balance !== undefined ? balance.toFixed(2) : "N/A",
     },
     {
       title: "Stamps",
       dataIndex: "stamps",
-      render: (stamps) => (stamps !== "" ? stamps : "N/A"),
+      render: (stamps) =>
+        stamps !== null && stamps !== undefined ? stamps : "N/A",
     },
     {
       title: "Actions",
@@ -804,34 +801,42 @@ const paymentManagmentPage = () => {
           </button>
         </div>
 
-        {isDepositsTableVisible && (
-          <Table
-            columns={depositsTableColumns}
-            rowKey={(record) => record.id}
-            dataSource={users}
-            pagination={{
-              ...tableParams.pagination,
-              showSizeChanger: true,
-              pageSizeOptions: ["10", "20", "50"],
-            }}
-            loading={loading}
-            onChange={handleTableChange}
-          />
-        )}
+        {isContentLoading ? (
+          <div className="min-h-screen flex items-center justify-center">
+            <Spin size="large" />
+          </div>
+        ) : (
+          <>
+            {isDepositsTableVisible && (
+              <Table
+                columns={depositsTableColumns}
+                rowKey={(record) => record.id}
+                dataSource={users}
+                pagination={{
+                  ...tableParams.pagination,
+                  showSizeChanger: true,
+                  pageSizeOptions: ["10", "20", "50"],
+                }}
+                loading={loading}
+                onChange={handleTableChange}
+              />
+            )}
 
-        {isPurchasesTableVisible && (
-          <Table
-            columns={paymentsTableColumns}
-            rowKey={(record) => record.id}
-            dataSource={users}
-            pagination={{
-              ...tableParams.pagination,
-              showSizeChanger: true,
-              pageSizeOptions: ["10", "20", "50"],
-            }}
-            loading={loading}
-            onChange={handleTableChange}
-          />
+            {isPurchasesTableVisible && (
+              <Table
+                columns={paymentsTableColumns}
+                rowKey={(record) => record.id}
+                dataSource={users}
+                pagination={{
+                  ...tableParams.pagination,
+                  showSizeChanger: true,
+                  pageSizeOptions: ["10", "20", "50"],
+                }}
+                loading={loading}
+                onChange={handleTableChange}
+              />
+            )}
+          </>
         )}
 
         <EditDepositModal

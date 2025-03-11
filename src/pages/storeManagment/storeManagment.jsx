@@ -237,6 +237,7 @@ const storeManagmentPage = () => {
     try {
       const newDrink = {
         name: values.name,
+        nameLower: values.name.toLowerCase().replace(/\s/g, ""),
         price: values.price,
       };
       const addNewDrinkResponse = await client.graphql({
@@ -530,7 +531,7 @@ const storeManagmentPage = () => {
       title: "Drink Name",
       dataIndex: "name",
       render: (name) => `${name.first} ${name.last}`,
-      ...getColumnSearchProps("name"),
+      ...getColumnSearchProps("nameLower"),
     },
     {
       title: "Price",

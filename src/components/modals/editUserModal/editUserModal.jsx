@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Button, Form, Input } from "antd";
+import { Modal, Button, Form, Input, Divider } from "antd";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import PhoneInput from "react-phone-input-2";
@@ -14,8 +14,8 @@ const EditUserModal = ({
 }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [selectedCountryCode, setSelectedCountryCode] = useState("");
-  const [phoneNumberWithoutCountryCode, setPhoneNumberWithoutCountryCode] =
-    useState("");
+  const [phoneNumberWithoutCountryCode, setPhoneNumberWithoutCountryCode] = useState("");
+  const [availableFreeDrinks, setAvailableFreeDrinks] = useState(0);
 
   const validationSchema = Yup.object().shape({
     email: Yup.string()
@@ -34,7 +34,16 @@ const EditUserModal = ({
     stamps: Yup.number()
       .typeError("Stamps must be a number")
       .required("Stamps are required"),
-    freeDrinks: Yup.number().typeError("Free Drinks must be a number"),
+    redeemedDrinks: Yup.number()
+      .typeError("Must be a number")
+      .min(0, "Cannot redeem negative drinks")
+      .test(
+        'max-redeem',
+        'Required and cannot redeem more than available free drinks',
+        function(value) {
+          return value <= availableFreeDrinks;
+        }
+      )
   });
 
   const formik = useFormik({
@@ -47,17 +56,20 @@ const EditUserModal = ({
       phone: initialValues?.fullPhoneNumber
         ? initialValues.fullPhoneNumber.replace(/\D/g, "")
         : "",
-      freeDrinks: initialValues?.freeDrinks || 0,
       balance: initialValues?.balance || 0,
       coins: initialValues?.coins || 0,
       stamps: initialValues?.stamps || 0,
+      redeemedDrinks: 0
     },
     validationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
+        const newFreeDrinks = availableFreeDrinks - values.redeemedDrinks;
+        
         await onSubmit(
           {
             ...values,
+            freeDrinks: newFreeDrinks,
             phoneNumber: `+${values.phone}`,
             countryCode: selectedCountryCode,
             phoneNumberWithoutCountryCode,
@@ -78,8 +90,8 @@ const EditUserModal = ({
     if (initialValues) {
       const fullPhone = initialValues.fullPhoneNumber || "";
       setPhoneNumber(fullPhone);
+      setAvailableFreeDrinks(initialValues.freeDrinks || 0);
 
-      // Parse country code and phone number
       if (fullPhone) {
         const dialCodeMatch = fullPhone.match(/^\+\d+/);
         if (dialCodeMatch) {
@@ -111,7 +123,7 @@ const EditUserModal = ({
             variant="solid"
             onClick={formik.handleSubmit}
             loading={formik.isSubmitting}
-            disabled={formik.isSubmitting}
+            disabled={formik.isSubmitting || !!formik.errors.redeemedDrinks}
           >
             Save Changes
           </Button>
@@ -119,148 +131,164 @@ const EditUserModal = ({
       ]}
       width={700}
     >
-      <Form layout="vertical" className="grid grid-cols-2 gap-x-4">
-        {/* Email Field */}
-        <Form.Item
-          label="Email"
-          validateStatus={formik.errors.email && "error"}
-          help={formik.errors.email}
-          className="col-span-1"
-        >
-          <Input
-            placeholder="Email"
-            name="email"
-            value={formik.values.email}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-          />
-        </Form.Item>
+      <Form layout="vertical">
+        <h3 className="text-lg font-semibold mb-4">User Information :</h3>
 
-        {/* Customer Name Field */}
-        <Form.Item
-          label="Customer Name"
-          validateStatus={formik.errors.name && "error"}
-          help={formik.errors.name}
-          className="col-span-1"
-        >
-          <Input
-            placeholder="Customer Name"
-            name="name"
-            value={formik.values.name}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-          />
-        </Form.Item>
+        <div className="grid grid-cols-2 gap-x-4">
+          {/* Email Field */}
+          <Form.Item
+            label="Email"
+            validateStatus={formik.errors.email && "error"}
+            help={formik.errors.email}
+            className="col-span-1"
+          >
+            <Input
+              placeholder="Email"
+              name="email"
+              value={formik.values.email}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+          </Form.Item>
 
-        {/* Phone Number Field */}
-        <Form.Item
-          label="Phone Number"
-          className="col-span-1"
-          validateStatus={formik.errors.phone && "error"}
-          help={formik.errors.phone}
-        >
-          <PhoneInput
-            value={phoneNumber}
-            onChange={(phone, data) => {
-              const rawPhone = phone.replace(/\D/g, "");
-              setPhoneNumber(phone);
-              formik.setFieldValue("phone", rawPhone);
+          {/* Customer Name Field */}
+          <Form.Item
+            label="Customer Name"
+            validateStatus={formik.errors.name && "error"}
+            help={formik.errors.name}
+            className="col-span-1"
+          >
+            <Input
+              placeholder="Customer Name"
+              name="name"
+              value={formik.values.name}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+          </Form.Item>
 
-              if (data?.dialCode && rawPhone) {
-                const dialCode = data.dialCode;
-                const number = rawPhone.startsWith(dialCode)
-                  ? rawPhone.slice(dialCode.length)
-                  : rawPhone;
-                const code = `+${dialCode}`;
-                setSelectedCountryCode(code);
-                setPhoneNumberWithoutCountryCode(number);
-              }
-            }}
-            inputStyle={{
-              width: "100%",
-              height: "40px",
-              borderRadius: "10px",
-              paddingLeft: "55px",
-            }}
-            buttonStyle={{
-              borderTopLeftRadius: "8px",
-              borderBottomLeftRadius: "8px",
-              padding: "5px",
-            }}
-          />
-        </Form.Item>
+          {/* Phone Number Field */}
+          <Form.Item
+            label="Phone Number"
+            className="col-span-1"
+            validateStatus={formik.errors.phone && "error"}
+            help={formik.errors.phone}
+          >
+            <PhoneInput
+              value={phoneNumber}
+              onChange={(phone, data) => {
+                const rawPhone = phone.replace(/\D/g, "");
+                setPhoneNumber(phone);
+                formik.setFieldValue("phone", rawPhone);
 
-        {/* Other form fields remain the same */}
-        {/* Deposit Balance Field */}
-        <Form.Item
-          label="Deposit Balance"
-          validateStatus={formik.errors.balance && "error"}
-          help={formik.errors.balance}
-          className="col-span-1"
-        >
-          <Input
-            type="number"
-            placeholder="Deposit Balance"
-            name="balance"
-            value={formik.values.balance}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            disabled
-          />
-        </Form.Item>
+                if (data?.dialCode && rawPhone) {
+                  const dialCode = data.dialCode;
+                  const number = rawPhone.startsWith(dialCode)
+                    ? rawPhone.slice(dialCode.length)
+                    : rawPhone;
+                  const code = `+${dialCode}`;
+                  setSelectedCountryCode(code);
+                  setPhoneNumberWithoutCountryCode(number);
+                }
+              }}
+              inputStyle={{
+                width: "100%",
+                height: "40px",
+                borderRadius: "10px",
+                paddingLeft: "55px",
+              }}
+              buttonStyle={{
+                borderTopLeftRadius: "8px",
+                borderBottomLeftRadius: "8px",
+                padding: "5px",
+              }}
+            />
+          </Form.Item>
 
-        {/* Coins Field */}
-        <Form.Item
-          label="Coins"
-          validateStatus={formik.errors.coins && "error"}
-          help={formik.errors.coins}
-          className="col-span-1"
-        >
-          <Input
-            type="number"
-            placeholder="Coins"
-            name="coins"
-            value={formik.values.coins}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            disabled
-          />
-        </Form.Item>
+          {/* Deposit Balance Field */}
+          <Form.Item
+            label="Deposit Balance"
+            validateStatus={formik.errors.balance && "error"}
+            help={formik.errors.balance}
+            className="col-span-1"
+          >
+            <Input
+              type="number"
+              placeholder="Deposit Balance"
+              name="balance"
+              value={formik.values.balance}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+          </Form.Item>
 
-        {/* Stamps Field */}
-        <Form.Item
-          label="Stamps"
-          validateStatus={formik.errors.stamps && "error"}
-          help={formik.errors.stamps}
-          className="col-span-1"
-        >
-          <Input
-            type="number"
-            placeholder="Stamps"
-            name="stamps"
-            value={formik.values.stamps}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            disabled
-          />
-        </Form.Item>
+          {/* Coins Field */}
+          <Form.Item
+            label="Coins"
+            validateStatus={formik.errors.coins && "error"}
+            help={formik.errors.coins}
+            className="col-span-1"
+          >
+            <Input
+              type="number"
+              placeholder="Coins"
+              name="coins"
+              value={formik.values.coins}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+          </Form.Item>
 
-        {/* Free Drinks Field */}
-        <Form.Item
-          label="Free Drinks"
-          validateStatus={formik.errors.freeDrinks && "error"}
-          help={formik.errors.freeDrinks}
-        >
-          <Input
-            type="number"
-            placeholder="Free Drinks"
-            name="freeDrinks"
-            value={formik.values.freeDrinks}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            disabled
-          />
-        </Form.Item>
+          {/* Stamps Field */}
+          <Form.Item
+            label="Stamps"
+            validateStatus={formik.errors.stamps && "error"}
+            help={formik.errors.stamps}
+            className="col-span-1"
+          >
+            <Input
+              type="number"
+              placeholder="Stamps"
+              name="stamps"
+              value={formik.values.stamps}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+          </Form.Item>
+        </div>
+      </Form>
+
+      <Divider />
+
+      <Form layout="vertical">
+        <h3 className="text-lg font-semibold mb-4">Track Free Drinks :</h3>
+
+        <div className="grid grid-cols-2 gap-x-4">
+          {/* Available Free Drinks Field */}
+          <Form.Item label="Available Free Drinks">
+            <Input
+              type="number"
+              value={availableFreeDrinks}
+              disabled
+            />
+          </Form.Item>
+
+          {/* Redeemed Drinks Field */}
+          <Form.Item
+            label="Drinks Redeemed"
+            validateStatus={formik.errors.redeemedDrinks && "error"}
+            help={formik.errors.redeemedDrinks}
+          >
+            <Input
+              type="number"
+              placeholder="Drinks to redeem"
+              name="redeemedDrinks"
+              value={formik.values.redeemedDrinks}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+          </Form.Item>
+        </div>
       </Form>
     </Modal>
   );

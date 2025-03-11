@@ -68,7 +68,7 @@ export const GetUserWithLastDeposit = /* GraphQL */ `
       createdAt
       updatedAt
       deposits(
-        sortDirection: ASC # Oldest first
+        sortDirection: DESC # Oldest first
         limit: 1 # Get only the last deposit
       ) {
         items {

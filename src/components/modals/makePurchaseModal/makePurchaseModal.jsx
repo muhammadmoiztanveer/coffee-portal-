@@ -142,7 +142,7 @@ const MakePurchaseModal = ({
                 Wallet Balance
               </span>
               <div className="border flex items-center justify-center rounded-lg text-3xl font-bold p-6 bg-gray-100 text-black">
-                $ {initialValues?.balance?.toFixed(2) || "0.00"}
+                PKR{" "}{initialValues?.balance?.toFixed(2) || "0.00"}
               </div>
             </div>
 
@@ -151,7 +151,7 @@ const MakePurchaseModal = ({
                 Total Bill
               </span>
               <div className="border flex items-center justify-center rounded-lg text-3xl font-bold p-6 bg-gray-100 text-black">
-                $ {totalBill.toFixed(2)}
+                PKR{" "}{totalBill.toFixed(2)}
               </div>
             </div>
           </div>

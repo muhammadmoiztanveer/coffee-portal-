@@ -12,6 +12,7 @@ import { updateUsers, deleteUsers } from "@/graphql/mutations";
 const userManagmentPage = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [loading, setLoading] = useState(false);
+  const [isContentLoading, setIsContentLoading] = useState(false);
   const [tableParams, setTableParams] = useState({
     pagination: {
       current: 1,
@@ -53,7 +54,7 @@ const userManagmentPage = () => {
     if (isFetching.current) return;
     isFetching.current = true;
     setLoading(true);
-    // setIsContentLoading(true);
+    setIsContentLoading(true);
 
     let paginationToken = null;
 
@@ -94,7 +95,7 @@ const userManagmentPage = () => {
       isFetching.current = false;
 
       setLoading(false);
-      // setIsContentLoading(false);
+      setIsContentLoading(false);
     }
   };
 
@@ -230,7 +231,6 @@ const userManagmentPage = () => {
 
   const handleEditUser = async (values, setSubmitting) => {
     setSubmitting(true);
-
     try {
       const editedUser = {
         id: userToEdit.id,
@@ -245,21 +245,17 @@ const userManagmentPage = () => {
         coins: values.coins,
         balance: values.balance,
       };
-
       await client.graphql({
         query: updateUsers,
         variables: { input: editedUser },
       });
-
       listUsersData();
-
       messageApi.open({
         type: "success",
         content: `Record updated successfully for ${userToEdit.email} !`,
       });
     } catch (error) {
       console.error("Error updating user:", error);
-
       messageApi.open({
         type: "error",
         content: "There was an error updating the record. Please try again.",
@@ -525,39 +521,51 @@ const userManagmentPage = () => {
     {
       title: "Email",
       dataIndex: "email",
-      // sorter: true,
+      render: (email) => email || "N/A",
     },
     {
       title: "Customer Name",
       dataIndex: "name",
-      // sorter: true,
-      // render: (name) => `${name.first} ${name.last}`,
+      render: (name) => name || "N/A",
       ...getColumnSearchProps("nameLower"),
     },
     {
       title: "Phone Number",
       dataIndex: "fullPhoneNumber",
+      render: (fullPhoneNumber) => fullPhoneNumber || "N/A",
       ...getColumnSearchProps("fullPhoneNumber"),
     },
     {
       title: "Total Balance",
       dataIndex: "balance",
+      render: (balance) =>
+        balance !== null && balance !== undefined ? balance.toFixed(2) : "N/A",
     },
     {
       title: "Coins",
       dataIndex: "coins",
+      render: (coins) =>
+        coins !== null && coins !== undefined ? coins : "N/A",
     },
     {
       title: "Stamps",
       dataIndex: "stamps",
+      render: (stamps) =>
+        stamps !== null && stamps !== undefined ? stamps : "N/A",
     },
     {
       title: "Purchase Count",
       dataIndex: "purchaseCount",
+      render: (purchaseCount) =>
+        purchaseCount !== null && purchaseCount !== undefined
+          ? purchaseCount
+          : "N/A",
     },
     {
       title: "Free Drinks",
       dataIndex: "freeDrinks",
+      render: (freeDrinks) =>
+        freeDrinks !== null && freeDrinks !== undefined ? freeDrinks : "N/A",
     },
     {
       title: "Actions",
@@ -607,14 +615,6 @@ const userManagmentPage = () => {
     }
   };
 
-  // if (isContentLoading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <Spin size="large" />
-  //     </div>
-  //   );
-  // }
-
   return (
     <>
       {contextHolder}
@@ -622,18 +622,26 @@ const userManagmentPage = () => {
       <div className="flex flex-col gap-8 mt-8">
         <div className="text-2xl font-medium">Users Managment</div>
 
-        <Table
-          columns={columns}
-          rowKey={(record) => record.id}
-          dataSource={users}
-          pagination={{
-            ...tableParams.pagination,
-            showSizeChanger: true,
-            pageSizeOptions: ["10", "20", "50"],
-          }}
-          loading={loading}
-          onChange={handleTableChange}
-        />
+        {isContentLoading ? (
+          <div className="min-h-screen flex items-center justify-center">
+            <Spin size="large" />
+          </div>
+        ) : (
+          <>
+            <Table
+              columns={columns}
+              rowKey={(record) => record.id}
+              dataSource={users}
+              pagination={{
+                ...tableParams.pagination,
+                showSizeChanger: true,
+                pageSizeOptions: ["10", "20", "50"],
+              }}
+              loading={loading}
+              onChange={handleTableChange}
+            />
+          </>
+        )}
 
         <DeleteModal
           isVisible={isModalVisible}

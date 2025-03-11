@@ -168,6 +168,7 @@ export const getDrinks = /* GraphQL */ `
     getDrinks(id: $id) {
       id
       name
+      nameLower
       price
       createdAt
       updatedAt
@@ -185,6 +186,7 @@ export const listDrinks = /* GraphQL */ `
       items {
         id
         name
+        nameLower
         price
         createdAt
         updatedAt

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Table, Input, Space, Button, Tabs, theme, message } from "antd";
+import { Table, Input, Space, Button, Tabs, theme, message, Spin } from "antd";
 import {
   SearchOutlined,
   DeleteFilled,
@@ -652,25 +652,6 @@ const paymentHistoryPage = () => {
 
   const fetchData = () => {
     setLoading(true);
-    // fetch(
-    //   `https://randomuser.me/api?${qs.stringify(
-    //     getRandomuserParams(tableParams)
-    //   )}`
-    // )
-    //   .then((res) => res.json())
-    //   .then(({ results }) => {
-    //     setData(results);
-    //     setLoading(false);
-    //     setTableParams({
-    //       ...tableParams,
-    //       pagination: {
-    //         ...tableParams.pagination,
-    //         total: 200,
-    //         // 200 is mock data, you should read it from server
-    //         // total: data.totalCount,
-    //       },
-    //     });
-    //   });
   };
 
   useEffect(fetchData, [
@@ -740,60 +721,100 @@ const paymentHistoryPage = () => {
         </button>
       </div>
 
-      {!isDepositsHistoryTableVisible && !isPurchasesHistoryTableVisible ? (
-        <Table
-          columns={columns}
-          rowKey={(record) => record.id}
-          dataSource={users}
-          pagination={tableParams.pagination}
-          loading={loading}
-          onChange={handleTableChange}
-        />
-      ) : null}
-
-      {isDepositsHistoryTableVisible && (
+      {isContentLoading ? (
+        <div className="min-h-screen flex items-center justify-center">
+          <Spin size="large" />
+        </div>
+      ) : (
         <>
-          <ArrowLeftOutlined
-            className="text-2xl"
-            onClick={() => {
-              setIsDepositsHistoryTableVisible(false);
-            }}
-          />
+          {!isDepositsHistoryTableVisible && !isPurchasesHistoryTableVisible ? (
+            <Table
+              columns={columns}
+              rowKey={(record) => record.id}
+              dataSource={users}
+              pagination={tableParams.pagination}
+              loading={loading}
+              onChange={handleTableChange}
+            />
+          ) : null}
 
-          <Table
-            columns={depositsTableColumns}
-            rowKey={(record) => record.id}
-            dataSource={histories}
-            pagination={{
-              ...tableParams.pagination,
-              total: histories.length,
-            }}
-            loading={loading}
-            onChange={handleTableChange}
-          />
-        </>
-      )}
+          {isDepositsHistoryTableVisible && (
+            <>
+              <ArrowLeftOutlined
+                className="text-2xl"
+                onClick={() => {
+                  setIsDepositsHistoryTableVisible(false);
+                }}
+              />
 
-      {isPurchasesHistoryTableVisible && (
-        <>
-          <ArrowLeftOutlined
-            className="text-2xl"
-            onClick={() => {
-              setIsPurchasesHistoryTableVisible(false);
-            }}
-          />
+              <div className="flex flex-col gap-4">
+                <div className="text-xl font-medium mb-4 w-full text-center rounded-xl bg-white p-4">
+                  Customer Deposits History
+                </div>
 
-          <Table
-            columns={paymentsTableColumns}
-            rowKey={(record) => record.id}
-            dataSource={histories}
-            pagination={{
-              ...tableParams.pagination,
-              total: histories.length,
-            }}
-            loading={loading}
-            onChange={handleTableChange}
-          />
+                <div>
+                  <span className="font-bold">Customer Name :</span>{" "}
+                  <span>{userToEdit?.name || "N/A"}</span>
+                </div>
+
+                <div>
+                  <span className="font-bold">Email :</span>{" "}
+                  {userToEdit?.email || "N/A"} <span></span>
+                </div>
+              </div>
+
+              <Table
+                columns={depositsTableColumns}
+                rowKey={(record) => record.id}
+                dataSource={histories}
+                pagination={{
+                  ...tableParams.pagination,
+                  total: histories.length,
+                }}
+                loading={loading}
+                onChange={handleTableChange}
+              />
+            </>
+          )}
+
+          {isPurchasesHistoryTableVisible && (
+            <>
+              <ArrowLeftOutlined
+                className="text-2xl"
+                onClick={() => {
+                  setIsPurchasesHistoryTableVisible(false);
+                }}
+              />
+
+              <div className="flex flex-col gap-4 w-full">
+                <div className="text-xl font-medium mb-4 w-full text-center rounded-xl bg-white p-4">
+                  Customer Purchases History
+                </div>
+
+                <div>
+                  <span className="font-bold">Customer Name :</span>{" "}
+                  <span>{userToEdit?.name || "N/A"}</span>
+                </div>
+
+                <div>
+                  <span className="font-bold">Email :</span>{" "}
+                  {userToEdit?.email || "N/A"} <span></span>
+                </div>
+              </div>
+
+              <Table
+                columns={paymentsTableColumns}
+                rowKey={(record) => record.id}
+                dataSource={histories}
+                pagination={{
+                  ...tableParams.pagination,
+                  total: histories.length,
+                }}
+                loading={loading}
+                onChange={handleTableChange}
+              />
+            </>
+          )}
         </>
       )}
     </div>
