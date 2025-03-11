@@ -3,15 +3,13 @@ import { Modal, Button } from "antd";
 import { useNavigate } from "react-router-dom";
 
 const deleteModal = ({ isVisible, onCancel, onConfirm }) => {
-  const navigate = useNavigate();
-
   return (
     <Modal
       title="Delete Record"
       open={isVisible}
       onCancel={onCancel}
       footer={[
-        <Button key="delete" type="primary" danger onClick={onConfirm}> 
+        <Button key="delete" type="primary" danger onClick={onConfirm}>
           Delete Record
         </Button>,
         <Button key="cancel" onClick={onCancel}>

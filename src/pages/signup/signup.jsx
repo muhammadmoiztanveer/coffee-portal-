@@ -10,7 +10,6 @@ import { getCurrentUser } from "aws-amplify/auth";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 
-// Validation schema using Yup
 const SignupSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email").required("Email is required"),
   name: Yup.string().required("Name is required"),
@@ -47,23 +46,14 @@ const SignUpPage = () => {
     checkAuthSession();
   }, [navigate]);
 
-  // Toggle password visibility
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const toggleConfirmPasswordVisibility = () =>
     setShowConfirmPassword(!showConfirmPassword);
 
-  // Handle form submission
   const handleSignup = async (values, { setSubmitting, setErrors }) => {
     try {
       console.log("Form values:", values);
       const combinedPhoneNumber = `+${phoneNumber.replace(/\D/g, "")}`;
-
-      // console.log(
-      //   "phone numberr",
-      //   combinedPhoneNumber,
-      //   selectedCountryCode,
-      //   phoneNumberWithoutCountryCode
-      // );
 
       const { isSignUpComplete, userId, nextStep } = await signUp({
         username: values.email,
@@ -80,7 +70,7 @@ const SignUpPage = () => {
           autoSignIn: true,
         },
       });
-      
+
       console.log("SignUp complete:", isSignUpComplete);
       console.log("User ID:", userId);
 
@@ -102,7 +92,7 @@ const SignUpPage = () => {
           initialValues={{
             email: "",
             name: "",
-            phone: "", // This will be used only for validation
+            phone: "",
             password: "",
             confirmPassword: "",
           }}
@@ -273,10 +263,7 @@ const SignUpPage = () => {
         <div className="mt-4 text-center">
           <p className="text-gray-600">
             Already have an account?{" "}
-            <Link
-              to="/login"
-              className="text-black underline hover:text-black"
-            >
+            <Link to="/login" className="text-black underline hover:text-black">
               Login
             </Link>
           </p>

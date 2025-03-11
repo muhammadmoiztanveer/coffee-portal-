@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Modal, Button, Form, Input } from "antd";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import ProductSelect from "../../ui/productsSelect/productsSelect";
+import ProductSelect from "@/ui/productsSelect/productsSelect";
 
 const EditDepositModal = ({ isVisible, onCancel, initialValues, onSubmit }) => {
   const [adjustedBalance, setAdjustedBalance] = useState(0);

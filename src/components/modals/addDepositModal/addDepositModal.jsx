@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Modal, Button, Form, Input, Select } from "antd";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import ProductSelect from "../../ui/productsSelect/productsSelect";
+import ProductSelect from "@/ui/productsSelect/productsSelect";
 
 const AddDepositModal = ({ isVisible, onCancel, initialValues, onSubmit }) => {
   const [selectedProductPrice, setSelectedProductPrice] = useState(null);
@@ -126,7 +126,7 @@ const AddDepositModal = ({ isVisible, onCancel, initialValues, onSubmit }) => {
             </span>
 
             <div className="border flex items-center justify-center rounded-lg text-3xl font-bold p-6 bg-white text-black">
-              PKR{" "}{totalBalance.toFixed(2)}
+              PKR {totalBalance.toFixed(2)}
             </div>
           </div>
         </div>

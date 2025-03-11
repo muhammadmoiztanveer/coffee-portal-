@@ -1,15 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Modal, Button, Form, Input, message } from "antd";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { generateClient } from "aws-amplify/api";
-import { updateDrinks } from "@/graphql/mutations";
-import { listDrinks } from "@/graphql/queries";
 
 const EditDrinkModal = ({ isVisible, onCancel, initialValues, onSubmit }) => {
   const [messageApi, contextHolder] = message.useMessage();
-
-  console.log("Initial Values:", initialValues);
 
   const validationSchema = Yup.object().shape({
     name: Yup.string().required("Drink Name is required"),

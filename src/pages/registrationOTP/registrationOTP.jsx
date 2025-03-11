@@ -134,7 +134,6 @@ const registrationOTPPage = () => {
             </Button>
           </div>
 
-          {/* Link for existing users */}
           <div className="mt-2 text-center">
             <Link
               to="/signup"

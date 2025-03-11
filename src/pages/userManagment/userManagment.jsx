@@ -423,13 +423,13 @@ const userManagmentPage = () => {
           <Input
             ref={searchInput}
             placeholder={`Search ${dataIndex}`}
-            value={localSelectedKeys[0] || ""} // Use local state
+            value={localSelectedKeys[0] || ""}
             onChange={(e) => {
               setLocalSelectedKeys(e.target.value ? [e.target.value] : []);
             }}
             onPressEnter={() =>
               handleSearch(localSelectedKeys, confirm, dataIndex)
-            } // Use local state
+            }
             style={{
               marginBottom: 8,
               display: "block",
@@ -440,7 +440,7 @@ const userManagmentPage = () => {
               type="primary"
               onClick={() =>
                 handleSearch(localSelectedKeys, confirm, dataIndex)
-              } // Use local state
+              }
               icon={<SearchOutlined />}
               size="small"
               style={{
@@ -450,15 +450,14 @@ const userManagmentPage = () => {
               Search
             </Button>
             <Button
-              onClick={
-                () =>
-                  clearFilters &&
-                  handleReset(
-                    clearFilters,
-                    dataIndex,
-                    close,
-                    setLocalSelectedKeys
-                  ) // Pass local setter
+              onClick={() =>
+                clearFilters &&
+                handleReset(
+                  clearFilters,
+                  dataIndex,
+                  close,
+                  setLocalSelectedKeys
+                )
               }
               size="small"
               style={{
@@ -494,23 +493,21 @@ const userManagmentPage = () => {
         },
       },
       render: (text, record, index) => {
-        // Include record and index if needed
         const relevantFilter = searchFilter.find(
           (filter) => filter.columnName === dataIndex
         );
 
         if (relevantFilter && relevantFilter.search) {
-          // Check if a filter exists for this column *and* has a search term
           return (
             <Highlighter
               highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
-              searchWords={[relevantFilter.search]} // Use the search term from the filter
+              searchWords={[relevantFilter.search]}
               autoEscape
               textToHighlight={text ? text.toString() : ""}
             />
           );
         } else {
-          return text; // Return original text if no filter or no search term
+          return text;
         }
       },
     };

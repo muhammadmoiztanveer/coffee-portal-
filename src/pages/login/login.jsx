@@ -7,7 +7,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { signIn } from "aws-amplify/auth";
 import { getCurrentUser } from "aws-amplify/auth";
 
-// Validation schema using Yup
 const LoginSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email").required("Email is required"),
   password: Yup.string()
@@ -18,18 +17,17 @@ const LoginSchema = Yup.object().shape({
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const navigate = useNavigate(); // Hook to redirect on success
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
 
-  // Function to check if the user is already authenticated
   const checkAuthentication = async () => {
     try {
       await getCurrentUser();
       navigate("/users");
     } catch (err) {
       console.log(err);
-      setLoading(false); // Allow sign-in form to render if not authenticated
+      setLoading(false);
     }
   };
 
@@ -37,10 +35,8 @@ const LoginPage = () => {
     checkAuthentication();
   }, []);
 
-  // Toggle password visibility
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  // Handle form submission
   const handleLogin = async (values, { setSubmitting }) => {
     const { email, password } = values;
     try {
@@ -134,7 +130,6 @@ const LoginPage = () => {
                 </p>
               )}
 
-              {/* Link for existing users */}
               <div className="mt-4 text-end">
                   <Link
                     to="/forgot-password"
@@ -144,7 +139,6 @@ const LoginPage = () => {
                   </Link>
               </div>
 
-              {/* Link for existing users */}
               <div className="mt-6 text-center">
                 <p className="text-gray-600">
                   Don't have an account ?{" "}

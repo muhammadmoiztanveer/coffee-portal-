@@ -1,23 +1,22 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Table, Input, Space, Button, Tabs, theme, message, Spin } from "antd";
+import { Table, Input, Space, Button, message, Spin } from "antd";
 import {
   SearchOutlined,
-  DeleteFilled,
   EditFilled,
   PlusCircleFilled,
 } from "@ant-design/icons";
 import EditDepositModal from "@/components/modals/editDepositModal/editDepositModal";
-import AddDepositModal from "../../components/modals/addDepositModal/addDepositModal";
-import MakePurchaseModal from "../../components/modals/makePurchaseModal/makePurchaseModal";
+import AddDepositModal from "@/components/modals/addDepositModal/addDepositModal";
+import MakePurchaseModal from "@/components/modals/makePurchaseModal/makePurchaseModal";
 import {
   getNextTokenForUsers,
   GetUserWithLastDeposit,
-} from "../../graphql/customQueries";
+} from "@/graphql/customQueries";
 import { listUsers } from "@/graphql/queries";
 import { generateClient } from "aws-amplify/api";
-import { updateUsers, deleteUsers } from "@/graphql/mutations";
-import { createDeposits, updateDeposits } from "../../graphql/mutations";
-import { createPayments } from "../../graphql/mutations";
+import { updateUsers } from "@/graphql/mutations";
+import { createDeposits, updateDeposits } from "@/graphql/mutations";
+import { createPayments } from "@/graphql/mutations";
 import Highlighter from "react-highlight-words";
 
 const paymentManagmentPage = () => {
@@ -30,10 +29,6 @@ const paymentManagmentPage = () => {
     },
   });
 
-  // useEffect(() => {
-  //   console.log("dataaa", data);
-  // }, data);
-
   const [messageApi, contextHolder] = message.useMessage();
   const [isContentLoading, setIsContentLoading] = useState(false);
   const [nextTokens, setNextTokens] = useState([]);
@@ -45,11 +40,6 @@ const paymentManagmentPage = () => {
   const isFetching = useRef(false);
   const client = generateClient();
 
-  // Delete Modal
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [recordToDelete, setRecordToDelete] = useState(null);
-  //   const navigate = useNavigate();
-
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isAddDepositModalVisible, setIsAddDepositModalVisible] =
     useState(false);
@@ -60,9 +50,6 @@ const paymentManagmentPage = () => {
 
   const [isDepositsTableVisible, setIsDepositsTableVisible] = useState(true);
   const [isPurchasesTableVisible, setIsPurchasesTableVisible] = useState(false);
-
-  const [searchText, setSearchText] = useState("");
-  const [searchedColumn, setSearchedColumn] = useState("");
 
   useEffect(() => {
     let totalUsers = 0;
@@ -264,8 +251,6 @@ const paymentManagmentPage = () => {
   };
 
   const handleMakePurchaseUser = async (values) => {
-    console.log("valuess", values);
-
     try {
       const updateValues = {
         id: values.id,
@@ -310,7 +295,7 @@ const paymentManagmentPage = () => {
 
   const handleCancelMakePurchase = () => {
     setIsMakePurchaseModalVisible(false);
-    setUserToEdit(null); // Clear the user data after cancel
+    setUserToEdit(null);
   };
   // END - Make Purchase Modal
 
@@ -504,13 +489,13 @@ const paymentManagmentPage = () => {
           <Input
             ref={searchInput}
             placeholder={`Search ${dataIndex}`}
-            value={localSelectedKeys[0] || ""} // Use local state
+            value={localSelectedKeys[0] || ""}
             onChange={(e) => {
               setLocalSelectedKeys(e.target.value ? [e.target.value] : []);
             }}
             onPressEnter={() =>
               handleSearch(localSelectedKeys, confirm, dataIndex)
-            } // Use local state
+            }
             style={{
               marginBottom: 8,
               display: "block",
@@ -521,7 +506,7 @@ const paymentManagmentPage = () => {
               type="primary"
               onClick={() =>
                 handleSearch(localSelectedKeys, confirm, dataIndex)
-              } // Use local state
+              }
               icon={<SearchOutlined />}
               size="small"
               style={{
@@ -531,15 +516,14 @@ const paymentManagmentPage = () => {
               Search
             </Button>
             <Button
-              onClick={
-                () =>
-                  clearFilters &&
-                  handleReset(
-                    clearFilters,
-                    dataIndex,
-                    close,
-                    setLocalSelectedKeys
-                  ) // Pass local setter
+              onClick={() =>
+                clearFilters &&
+                handleReset(
+                  clearFilters,
+                  dataIndex,
+                  close,
+                  setLocalSelectedKeys
+                )
               }
               size="small"
               style={{
@@ -575,23 +559,21 @@ const paymentManagmentPage = () => {
         },
       },
       render: (text, record, index) => {
-        // Include record and index if needed
         const relevantFilter = searchFilter.find(
           (filter) => filter.columnName === dataIndex
         );
 
         if (relevantFilter && relevantFilter.search) {
-          // Check if a filter exists for this column *and* has a search term
           return (
             <Highlighter
               highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
-              searchWords={[relevantFilter.search]} // Use the search term from the filter
+              searchWords={[relevantFilter.search]}
               autoEscape
               textToHighlight={text ? text.toString() : ""}
             />
           );
         } else {
-          return text; // Return original text if no filter or no search term
+          return text;
         }
       },
     };
@@ -710,43 +692,6 @@ const paymentManagmentPage = () => {
     },
   ];
 
-  const getRandomuserParams = (params) => ({
-    results: params.pagination?.pageSize,
-    page: params.pagination?.current,
-    ...params,
-  });
-
-  // const fetchData = () => {
-  //   setLoading(true);
-  //   fetch(
-  //     `https://randomuser.me/api?${qs.stringify(
-  //       getRandomuserParams(tableParams)
-  //     )}`
-  //   )
-  //     .then((res) => res.json())
-  //     .then(({ results }) => {
-  //       setData(results);
-  //       setLoading(false);
-  //       setTableParams({
-  //         ...tableParams,
-  //         pagination: {
-  //           ...tableParams.pagination,
-  //           total: 200,
-  //           // 200 is mock data, you should read it from server
-  //           // total: data.totalCount,
-  //         },
-  //       });
-  //     });
-  // };
-
-  // useEffect(fetchData, [
-  //   tableParams.pagination?.current,
-  //   tableParams.pagination?.pageSize,
-  //   tableParams?.sortOrder,
-  //   tableParams?.sortField,
-  //   JSON.stringify(tableParams.filters),
-  // ]);
-
   const handleTableChange = (pagination, filters, sorter) => {
     setTableParams({
       pagination,
@@ -755,7 +700,6 @@ const paymentManagmentPage = () => {
       sortField: Array.isArray(sorter) ? undefined : sorter.field,
     });
 
-    // `dataSource` is useless since `pageSize` changed
     if (pagination.pageSize !== tableParams.pagination?.pageSize) {
       setData([]);
     }

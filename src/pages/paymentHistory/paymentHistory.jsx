@@ -1,18 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Table, Input, Space, Button, Tabs, theme, message, Spin } from "antd";
-import {
-  SearchOutlined,
-  DeleteFilled,
-  EditFilled,
-  ArrowLeftOutlined,
-} from "@ant-design/icons";
+import { Table, Input, Space, Button, message, Spin } from "antd";
+import { SearchOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { generateClient } from "aws-amplify/api";
-import { listUsers } from "../../graphql/queries";
-import { getNextTokenForUsers } from "../../graphql/customQueries";
+import { listUsers } from "@/graphql/queries";
+import { getNextTokenForUsers } from "@/graphql/customQueries";
 import {
   GetUserWithAllDeposits,
   GetUserWithAllPayments,
-} from "../../graphql/customQueries";
+} from "@/graphql/customQueries";
 import moment from "moment";
 import Highlighter from "react-highlight-words";
 
@@ -29,8 +24,6 @@ const paymentHistoryPage = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [isContentLoading, setIsContentLoading] = useState(false);
   const [nextTokens, setNextTokens] = useState([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [excessRecords, setExcessRecords] = useState({});
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [users, setUsers] = useState([]);
   const [searchFilter, setSearchFilter] = useState([]);
@@ -45,17 +38,6 @@ const paymentHistoryPage = () => {
   const isFetching = useRef(false);
   const client = generateClient();
 
-  // Delete Modal
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [recordToDelete, setRecordToDelete] = useState(null);
-  //   const navigate = useNavigate();
-
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [isAddDepositModalVisible, setIsAddDepositModalVisible] =
-    useState(false);
-  const [isMakePurchaseModalVisible, setIsMakePurchaseModalVisible] =
-    useState(false);
-
   const [userToEdit, setUserToEdit] = useState(null);
 
   const [isDepositsTableVisible, setIsDepositsTableVisible] = useState(true);
@@ -65,9 +47,6 @@ const paymentHistoryPage = () => {
     useState(false);
   const [isPurchasesHistoryTableVisible, setIsPurchasesHistoryTableVisible] =
     useState(false);
-
-  const [searchText, setSearchText] = useState("");
-  const [searchedColumn, setSearchedColumn] = useState("");
 
   useEffect(() => {
     let totalUsers = 0;
@@ -449,13 +428,13 @@ const paymentHistoryPage = () => {
           <Input
             ref={searchInput}
             placeholder={`Search ${dataIndex}`}
-            value={localSelectedKeys[0] || ""} // Use local state
+            value={localSelectedKeys[0] || ""}
             onChange={(e) => {
               setLocalSelectedKeys(e.target.value ? [e.target.value] : []);
             }}
             onPressEnter={() =>
               handleSearch(localSelectedKeys, confirm, dataIndex)
-            } // Use local state
+            }
             style={{
               marginBottom: 8,
               display: "block",
@@ -466,7 +445,7 @@ const paymentHistoryPage = () => {
               type="primary"
               onClick={() =>
                 handleSearch(localSelectedKeys, confirm, dataIndex)
-              } // Use local state
+              }
               icon={<SearchOutlined />}
               size="small"
               style={{
@@ -476,15 +455,14 @@ const paymentHistoryPage = () => {
               Search
             </Button>
             <Button
-              onClick={
-                () =>
-                  clearFilters &&
-                  handleReset(
-                    clearFilters,
-                    dataIndex,
-                    close,
-                    setLocalSelectedKeys
-                  ) // Pass local setter
+              onClick={() =>
+                clearFilters &&
+                handleReset(
+                  clearFilters,
+                  dataIndex,
+                  close,
+                  setLocalSelectedKeys
+                )
               }
               size="small"
               style={{
@@ -520,23 +498,21 @@ const paymentHistoryPage = () => {
         },
       },
       render: (text, record, index) => {
-        // Include record and index if needed
         const relevantFilter = searchFilter.find(
           (filter) => filter.columnName === dataIndex
         );
 
         if (relevantFilter && relevantFilter.search) {
-          // Check if a filter exists for this column *and* has a search term
           return (
             <Highlighter
               highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
-              searchWords={[relevantFilter.search]} // Use the search term from the filter
+              searchWords={[relevantFilter.search]}
               autoEscape
               textToHighlight={text ? text.toString() : ""}
             />
           );
         } else {
-          return text; // Return original text if no filter or no search term
+          return text;
         }
       },
     };
@@ -566,12 +542,10 @@ const paymentHistoryPage = () => {
     {
       title: "Email",
       dataIndex: "email",
-      // sorter: true,
     },
     {
       title: "Customer Name",
       dataIndex: "name",
-      // sorter: true,
       render: (name) => `${name.first} ${name.last}`,
       ...getColumnSearchProps("nameLower"),
     },
@@ -644,12 +618,6 @@ const paymentHistoryPage = () => {
     },
   ];
 
-  const getRandomuserParams = (params) => ({
-    results: params.pagination?.pageSize,
-    page: params.pagination?.current,
-    ...params,
-  });
-
   const fetchData = () => {
     setLoading(true);
   };
@@ -670,7 +638,6 @@ const paymentHistoryPage = () => {
       sortField: Array.isArray(sorter) ? undefined : sorter.field,
     });
 
-    // `dataSource` is useless since `pageSize` changed
     if (pagination.pageSize !== tableParams.pagination?.pageSize) {
       setData([]);
     }
@@ -697,7 +664,6 @@ const paymentHistoryPage = () => {
       <div className="text-2xl font-medium">Payments History</div>
 
       <div className="flex gap-6 font-medium">
-        {/* #c67c4e */}
         <button
           className={
             isDepositsTableVisible

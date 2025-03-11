@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Button, Form, Input, Divider } from "antd";
+import { Modal, Button, Form, Input } from "antd";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import ProductSelect from "../../ui/productsSelect/productsSelect";
+import ProductSelect from "@/ui/productsSelect/productsSelect";
 
 const MakePurchaseModal = ({
   isVisible,
@@ -142,7 +142,7 @@ const MakePurchaseModal = ({
                 Wallet Balance
               </span>
               <div className="border flex items-center justify-center rounded-lg text-3xl font-bold p-6 bg-gray-100 text-black">
-                PKR{" "}{initialValues?.balance?.toFixed(2) || "0.00"}
+                PKR {initialValues?.balance?.toFixed(2) || "0.00"}
               </div>
             </div>
 
@@ -151,7 +151,7 @@ const MakePurchaseModal = ({
                 Total Bill
               </span>
               <div className="border flex items-center justify-center rounded-lg text-3xl font-bold p-6 bg-gray-100 text-black">
-                PKR{" "}{totalBill.toFixed(2)}
+                PKR {totalBill.toFixed(2)}
               </div>
             </div>
           </div>

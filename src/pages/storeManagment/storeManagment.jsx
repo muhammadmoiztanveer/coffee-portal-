@@ -3,13 +3,13 @@ import { Table, Input, Space, Button, message, Spin } from "antd";
 import Highlighter from "react-highlight-words";
 import { SearchOutlined, DeleteFilled, EditFilled } from "@ant-design/icons";
 import DeleteModal from "@/components/modals/deleteModal/deleteModal";
-import { getNextTokenForDrinks } from "../../graphql/customQueries";
+import { getNextTokenForDrinks } from "@/graphql/customQueries";
 import { listDrinks } from "@/graphql/queries";
 import { generateClient } from "aws-amplify/api";
 import { updateDrinks, deleteDrinks } from "@/graphql/mutations";
-import AddNewDrinkModal from "../../components/modals/addNewDrinkModal/addNewDrinkModal";
-import EditDrinkModal from "../../components/modals/editDrinkModal/editDrinkModal";
-import { createDrinks } from "../../graphql/mutations";
+import AddNewDrinkModal from "@/components/modals/addNewDrinkModal/addNewDrinkModal";
+import EditDrinkModal from "@/components/modals/editDrinkModal/editDrinkModal";
+import { createDrinks } from "@/graphql/mutations";
 
 const storeManagmentPage = () => {
   const [messageApi, contextHolder] = message.useMessage();
@@ -24,7 +24,6 @@ const storeManagmentPage = () => {
   const [nextTokens, setNextTokens] = useState([]);
   const [hasMore, setHasMore] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [excessRecords, setExcessRecords] = useState({});
   const [recordToDelete, setRecordToDelete] = useState(null);
 
   const [isAddNewDrinkModalVisible, setIsAddNewDrinkModalVisible] =
@@ -233,7 +232,7 @@ const storeManagmentPage = () => {
   };
 
   const handleAddNewDrink = async (values, setSubmitting) => {
-    setSubmitting(true); // Start submitting state
+    setSubmitting(true);
     try {
       const newDrink = {
         name: values.name,
@@ -244,7 +243,7 @@ const storeManagmentPage = () => {
         query: createDrinks,
         variables: { input: newDrink },
       });
-      listDrinksData(); // Refresh the drinks list
+      listDrinksData();
       messageApi.open({
         type: "success",
         content: `Drink added successfully!`,
@@ -263,18 +262,21 @@ const storeManagmentPage = () => {
 
   // START - EDIT MOdal
   const handleEditDrink = async (values, setSubmitting) => {
-    setSubmitting(true); // Start submitting state
+    setSubmitting(true);
     try {
       const editedDrink = {
         id: values.id,
         name: values.name,
         price: values.price,
       };
+
       await client.graphql({
         query: updateDrinks,
         variables: { input: editedDrink },
       });
-      listDrinksData(); // Refresh the drinks list
+
+      listDrinksData();
+
       messageApi.open({
         type: "success",
         content: `Record updated successfully for ${values.name}!`,
@@ -286,7 +288,7 @@ const storeManagmentPage = () => {
         content: "There was an error updating the record. Please try again.",
       });
     } finally {
-      setSubmitting(false); // End submitting state
+      setSubmitting(false);
       setIsEditDrinkModalVisible(false);
     }
   };
@@ -504,23 +506,21 @@ const storeManagmentPage = () => {
       },
     },
     render: (text, record, index) => {
-      // Include record and index if needed
       const relevantFilter = searchFilter.find(
         (filter) => filter.columnName === dataIndex
       );
 
       if (relevantFilter && relevantFilter.search) {
-        // Check if a filter exists for this column *and* has a search term
         return (
           <Highlighter
             highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
-            searchWords={[relevantFilter.search]} // Use the search term from the filter
+            searchWords={[relevantFilter.search]} 
             autoEscape
             textToHighlight={text ? text.toString() : ""}
           />
         );
       } else {
-        return text; // Return original text if no filter or no search term
+        return text;
       }
     },
   });
