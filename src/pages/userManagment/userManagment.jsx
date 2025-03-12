@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Table, Input, Space, Button, message, Spin } from "antd";
+import { Table, Input, Space, Button, message, Spin, Dropdown } from "antd";
 import Highlighter from "react-highlight-words";
 import { SearchOutlined, DeleteFilled, EditFilled } from "@ant-design/icons";
 import DeleteModal from "@/components/modals/deleteModal/deleteModal";
@@ -8,6 +8,15 @@ import { getNextTokenForUsers } from "@/graphql/customQueries";
 import { listUsers } from "@/graphql/queries";
 import { generateClient } from "aws-amplify/api";
 import { updateUsers, deleteUsers } from "@/graphql/mutations";
+// import {
+//   updateUserAttributes,
+//   signIn,
+//   fetchAuthSession,
+// } from "aws-amplify/auth";
+// import {
+//   CognitoIdentityProviderClient,
+//   AdminUpdateUserAttributesCommand,
+// } from "@aws-sdk/client-cognito-identity-provider";
 
 const userManagmentPage = () => {
   const [messageApi, contextHolder] = message.useMessage();
@@ -25,9 +34,11 @@ const userManagmentPage = () => {
   const [recordToDelete, setRecordToDelete] = useState(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [userToEdit, setUserToEdit] = useState(null);
+  const [editFormToOpen, setEditFormToOpen] = useState("");
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [users, setUsers] = useState([]);
   const [searchFilter, setSearchFilter] = useState([]);
+  const [verifyingEmail, setVerifyingEmail] = useState(null);
   const searchInput = useRef(null);
 
   const isFetching = useRef(false);
@@ -219,8 +230,10 @@ const userManagmentPage = () => {
   }, []);
 
   // START - Edit Modal
-  const showEditModal = (user) => {
+  const showEditModal = (user, whichForm) => {
     setUserToEdit(user);
+
+    setEditFormToOpen(whichForm);
   };
 
   useEffect(() => {
@@ -231,12 +244,55 @@ const userManagmentPage = () => {
 
   const handleEditUser = async (values, setSubmitting) => {
     setSubmitting(true);
+
     try {
+      // import.meta.env.VITE_USER_POOL_ID,
+     
+
+       // if (editFormToOpen === "personal_info") {
+      //   try {
+      //     // Get credentials using Amplify v6 auth
+      //     const { credentials } = await fetchAuthSession();
+
+      //     // Create Cognito client with obtained credentials
+      //     const client = new CognitoIdentityProviderClient({
+      //       region: "eu-north-1",
+      //       credentials: {
+      //         accessKeyId: credentials.accessKeyId,
+      //         secretAccessKey: credentials.secretAccessKey,
+      //         sessionToken: credentials.sessionToken,
+      //       },
+      //     });
+
+      //     const params = {
+      //       UserPoolId: "eu-north-1_CF96T6a0l",
+      //       Username: values.email,
+      //       UserAttributes: [
+      //         { Name: "name", Value: values.name },
+      //         { Name: "phone_number", Value: values.phoneNumber },
+      //         { Name: "custom:countryCode", Value: values.countryCode },
+      //         {
+      //           Name: "custom:phoneNumber",
+      //           Value: values.phoneNumberWithoutCountryCode,
+      //         },
+      //       ],
+      //     };
+
+      //     await client.send(new AdminUpdateUserAttributesCommand(params));
+      //     setSubmitting(false);
+      //   } catch (error) {
+      //     message.error(`Error updating profile: ${error.message}`);
+      //     console.error("ERROR updating Cognito user", error);
+      //     setSubmitting(false);
+      //     return;
+      //   }
+      // }
+
       const editedUser = {
         id: userToEdit.id,
         email: values.email,
         name: values.name,
-        nameLower: values.name.toLowerCase(),
+        nameLower: values.name.toLowerCase().replace(/\s/g, ""),
         countryCode: values.countryCode,
         phoneNumber: values.phoneNumberWithoutCountryCode,
         fullPhoneNumber: values.phoneNumber,
@@ -245,11 +301,14 @@ const userManagmentPage = () => {
         coins: values.coins,
         balance: values.balance,
       };
+
       await client.graphql({
         query: updateUsers,
         variables: { input: editedUser },
       });
+
       listUsersData();
+
       messageApi.open({
         type: "success",
         content: `Record updated successfully for ${userToEdit.email} !`,
@@ -268,6 +327,7 @@ const userManagmentPage = () => {
   const handleCancelEdit = () => {
     setIsEditModalVisible(false);
     setUserToEdit(null);
+    setEditFormToOpen(null);
   };
   // END - Edit Modal
 
@@ -514,6 +574,27 @@ const userManagmentPage = () => {
   };
   // END - Search Filter
 
+  const getMenuItems = (record) => {
+    return [
+      {
+        key: "1",
+        label: (
+          <button onClick={() => showEditModal(record, "personal_info")}>
+            Edit Personal Info
+          </button>
+        ),
+      },
+      {
+        key: "2",
+        label: (
+          <button onClick={() => showEditModal(record, "user_account")}>
+            Manage User Account
+          </button>
+        ),
+      },
+    ];
+  };
+
   const columns = [
     {
       title: "Email",
@@ -569,12 +650,17 @@ const userManagmentPage = () => {
       render: (_, record) => (
         <div className="flex space-x-2">
           {/* Edit Icon */}
-          <button
-            className="text-base cursor-pointer border rounded-lg py-1 px-2"
-            onClick={() => showEditModal(record)}
+          <Dropdown
+            menu={{
+              items: getMenuItems(record),
+            }}
+            placement="bottomRight"
+            arrow
           >
-            <EditFilled />
-          </button>
+            <button className="text-base cursor-pointer border rounded-lg py-1 px-2">
+              <EditFilled />
+            </button>
+          </Dropdown>
 
           {/* Delete Icon */}
           <button
@@ -652,6 +738,7 @@ const userManagmentPage = () => {
           initialValues={userToEdit}
           onSubmit={handleEditUser}
           isUserEditingPending={false}
+          formToShow={editFormToOpen}
         />
       </div>
     </>
