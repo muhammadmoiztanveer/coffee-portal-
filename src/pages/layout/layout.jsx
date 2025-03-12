@@ -9,7 +9,7 @@ import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { Spin, Button } from "antd";
 import Logo from "@/assets/logo.png";
 import User from "@/assets/user.png";
-import { fetchAuthSession, fetchUserAttributes } from "aws-amplify/auth";
+import { fetchUserAttributes } from "aws-amplify/auth";
 import SignOutModal from "../../components/modals/signOutModal/signOutModal";
 import "@/main.css";
 
