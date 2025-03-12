@@ -8,15 +8,11 @@ import { getNextTokenForUsers } from "@/graphql/customQueries";
 import { listUsers } from "@/graphql/queries";
 import { generateClient } from "aws-amplify/api";
 import { updateUsers, deleteUsers } from "@/graphql/mutations";
-// import {
-//   updateUserAttributes,
-//   signIn,
-//   fetchAuthSession,
-// } from "aws-amplify/auth";
-// import {
-//   CognitoIdentityProviderClient,
-//   AdminUpdateUserAttributesCommand,
-// } from "@aws-sdk/client-cognito-identity-provider";
+import { fetchAuthSession } from "aws-amplify/auth";
+import {
+  CognitoIdentityProviderClient,
+  AdminUpdateUserAttributesCommand,
+} from "@aws-sdk/client-cognito-identity-provider";
 
 const userManagmentPage = () => {
   const [messageApi, contextHolder] = message.useMessage();
@@ -38,7 +34,6 @@ const userManagmentPage = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [users, setUsers] = useState([]);
   const [searchFilter, setSearchFilter] = useState([]);
-  const [verifyingEmail, setVerifyingEmail] = useState(null);
   const searchInput = useRef(null);
 
   const isFetching = useRef(false);
@@ -246,47 +241,43 @@ const userManagmentPage = () => {
     setSubmitting(true);
 
     try {
-      // import.meta.env.VITE_USER_POOL_ID,
-     
+      if (editFormToOpen === "personal_info") {
+        try {
+          const { credentials } = await fetchAuthSession();
 
-       // if (editFormToOpen === "personal_info") {
-      //   try {
-      //     // Get credentials using Amplify v6 auth
-      //     const { credentials } = await fetchAuthSession();
+          const client = new CognitoIdentityProviderClient({
+            region: `${import.meta.env.VITE_AWS_REGION}`,
+            credentials: {
+              accessKeyId: credentials.accessKeyId,
+              secretAccessKey: credentials.secretAccessKey,
+              sessionToken: credentials.sessionToken,
+            },
+          });
 
-      //     // Create Cognito client with obtained credentials
-      //     const client = new CognitoIdentityProviderClient({
-      //       region: "eu-north-1",
-      //       credentials: {
-      //         accessKeyId: credentials.accessKeyId,
-      //         secretAccessKey: credentials.secretAccessKey,
-      //         sessionToken: credentials.sessionToken,
-      //       },
-      //     });
+          const params = {
+            UserPoolId: `${import.meta.env.VITE_AWS_USER_POOL_ID}`,
+            Username: values.email,
+            UserAttributes: [
+              { Name: "name", Value: values.name },
+              { Name: "phone_number", Value: values.phoneNumber },
+              { Name: "custom:countryCode", Value: values.countryCode },
+              {
+                Name: "custom:phoneNumber",
+                Value: values.phoneNumberWithoutCountryCode,
+              },
+            ],
+          };
 
-      //     const params = {
-      //       UserPoolId: "eu-north-1_CF96T6a0l",
-      //       Username: values.email,
-      //       UserAttributes: [
-      //         { Name: "name", Value: values.name },
-      //         { Name: "phone_number", Value: values.phoneNumber },
-      //         { Name: "custom:countryCode", Value: values.countryCode },
-      //         {
-      //           Name: "custom:phoneNumber",
-      //           Value: values.phoneNumberWithoutCountryCode,
-      //         },
-      //       ],
-      //     };
+          await client.send(new AdminUpdateUserAttributesCommand(params));
 
-      //     await client.send(new AdminUpdateUserAttributesCommand(params));
-      //     setSubmitting(false);
-      //   } catch (error) {
-      //     message.error(`Error updating profile: ${error.message}`);
-      //     console.error("ERROR updating Cognito user", error);
-      //     setSubmitting(false);
-      //     return;
-      //   }
-      // }
+          setSubmitting(false);
+        } catch (error) {
+          message.error(`Error updating profile: ${error.message}`);
+          console.error("ERROR updating Cognito user", error);
+          setSubmitting(false);
+          return;
+        }
+      }
 
       const editedUser = {
         id: userToEdit.id,

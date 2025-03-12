@@ -9,7 +9,7 @@ import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { Spin, Button } from "antd";
 import Logo from "@/assets/logo.png";
 import User from "@/assets/user.png";
-import { fetchAuthSession } from "aws-amplify/auth";
+import { fetchAuthSession, fetchUserAttributes } from "aws-amplify/auth";
 import SignOutModal from "../../components/modals/signOutModal/signOutModal";
 import "@/main.css";
 
@@ -26,9 +26,9 @@ const Layout = () => {
 
   async function currentAuthenticatedUser() {
     try {
-      const userInfo = await fetchAuthSession();
-      const userName = userInfo.tokens?.idToken?.payload.name;
-      const customType = userInfo.tokens?.idToken?.payload["custom:type"];
+      const userInfo = await fetchUserAttributes();
+      const userName = userInfo.name;
+      const customType = userInfo["custom:type"];
 
       setUsername(userName);
       setUserType(customType);
