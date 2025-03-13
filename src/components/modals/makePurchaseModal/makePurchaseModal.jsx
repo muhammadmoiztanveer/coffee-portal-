@@ -79,6 +79,8 @@ const MakePurchaseModal = ({
   });
 
   useEffect(() => {
+    setErrorMessage("");
+
     if (formik.values.productPrice && formik.values.stamps) {
       const price = parseFloat(formik.values.productPrice);
       const stamps = parseInt(formik.values.stamps);
@@ -87,6 +89,13 @@ const MakePurchaseModal = ({
       setTotalBill(0);
     }
   }, [formik.values.productPrice, formik.values.stamps]);
+
+  useEffect(() => {
+    setErrorMessage("");
+    setSuccessMessage("");
+    formik.values.productPrice = null;
+    formik.values.stamps = null;
+  }, [initialValues]);
 
   const handleProductChange = (price) => {
     setSelectedProductPrice(parseFloat(price));
